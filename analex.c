@@ -4,12 +4,6 @@
 #include <ctype.h>
 #include "analex.h"
 
-#define QTD_LEXEMA 100
-#define QTD_DIGITO 100
-
-//variável global - contador de vezes que o ENTER foi pressionado
-int qtd_linhas = 1;
-
 //Lê um caracter e retorna 1 caso seja um sinal da linguagem e 0 (zero), caso contrário
 int ehsinal(char c) {
   int i = 0;
@@ -714,30 +708,4 @@ token analex(FILE *FD) {
 
   } //fim do loop
 
-}
-
-int main() {
-
-  FILE *FD;
-  int c, i=0;
-  token t;
-
-  FD = fopen("documento.txt", "r");
-
-  if (FD == NULL) { //teste de abertura do arquivo
-   printf ("Houve um erro ao abrir o arquivo.\n");
-   return 1;
-  }
-
-  while(1) {
-    T = analex(FD);
-
-    printf("< %s, %s >\n", T.categoria, T.lexema);
-
-    if (strcmp(T.categoria, "FIM_ARQUIVO") == 0)
-      break;
-  }
-
-  fclose(FD);
-  return 0;
 }

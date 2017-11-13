@@ -5,6 +5,8 @@
 #define QTD_SINAIS sizeof(sinais)/sizeof(token)+1
 #define QTD_PR sizeof(PR)/sizeof(char*)
 #define QTD_CATEGORIAS sizeof(categorias)/sizeof(char*)
+#define QTD_LEXEMA 100
+#define QTD_DIGITO 100
 
 typedef enum escopo {
   global, local
@@ -53,6 +55,8 @@ char *PR[] = {
 
 // Variáveis Globais
 token T;
+FILE *FD;
+int qtd_linhas = 1; // contador de vezes que o ENTER foi pressionado
 
 char ID[100][100]; //pode ser substituido pela pilha de simbolos
 int qtd_ID = 0;
@@ -62,5 +66,11 @@ int qtd_literais = 0;
 
 simbolo pilhaSimbolos[100];
 int topoSimbolos = 0;
+
+// Assinatura de funções
+int ehsinal(char);
+token copiaTokenSinal(char*);
+void transicao_sinais(int *, char *, int *, char, FILE *);
+token analex(FILE *);
 
 #endif
