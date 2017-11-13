@@ -7,32 +7,33 @@
 #define QTD_CATEGORIAS sizeof(categorias)/sizeof(char*)
 
 typedef enum escopo {
-  global, local
+    global, local
 } Escopo;
 
 //Definição do tipo Token
 typedef struct Token {
-  char categoria[30];
-  char lexema[30];
-  char sinal[30];
-  int codigo;
-  int valor_int;
-  float valor_float;
+    char categoria[30];
+    char lexema[30];
+    char sinal[30];
+    int codigo;
+    int valor_int;
+    float valor_float;
 } token;
 
 //Definição do tipo Símbolo
 typedef struct simbolos {
-  char nome[30], tipo[30], categoria[30];
-  Escopo escopo;
-  int ehZumbi;
-  int codigo;
-  int valor_int;
-  float valor_float;
-  char valor_char;
+    char nome[30], tipo[30], categoria[30];
+    Escopo escopo;
+    int ehZumbi;
+    int codigo;
+    int valor_int;
+    float valor_float;
+    char valor_char;
 } simbolo;
 
-                    // 0     1     2      3        4       5       6          7
-char *categorias[] = {"PR", "SN", "ID", "CT_I", "CT_R", "CT_LT", "CT_C", "FIM_ARQUIVO"};
+int qtd_ID = 0;
+int qtd_literais = 0;
+
 
 // Conjunto de sinais e operadores da linguagem
 token sinais[] = { {"SN", "+", "mais"}, {"SN", "-", "menos"}, {"SN", "*", "asterisco"},
@@ -43,24 +44,34 @@ token sinais[] = { {"SN", "+", "mais"}, {"SN", "-", "menos"}, {"SN", "*", "aster
                    {"SN", "&&", "e_logico"}, {"SN", "||", "ou_logico"}, {"SN", "!", "nao_logico"},
                    {"SN", "!=", "nao_igual"}, {"SN", "\'", "apostofo"}, {"SN", "\"", "aspas"},
                    {"SN", ";", "ponto_virgula"}, {"SN", ".", "ponto"}, {"SN", ",", "virgula"}, {"SN", "\\", "contra-barra"}
-                };
+};
+
+// 0     1     2      3        4       5       6          7
+char *categorias[] = {"PR", "SN", "ID", "CT_I", "CT_R", "CT_LT", "CT_C", "FIM_ARQUIVO"};
+
 
 // Conjunto de Palavras Reservadas da linguagem Cmm
 char *PR[] = {
-  "semretorno", "caracter", "inteiro", "real", "booleano", "semparam", "se", "senao",
-  "enquanto", "para", "retorne", "principal", "prototipo"
+        "semretorno", "caracter", "inteiro", "real", "booleano", "semparam", "se", "senao",
+        "enquanto", "para", "retorne", "principal", "prototipo"
 };
 
 // Variáveis Globais
 token T;
+FILE *FD;
 
 char ID[100][100]; //pode ser substituido pela pilha de simbolos
-int qtd_ID = 0;
+//int qtd_ID = 0;
 
 char literais[100][100];
-int qtd_literais = 0;
+//int qtd_literais = 0;
 
 simbolo pilhaSimbolos[100];
 int topoSimbolos = 0;
+
+
+//Declaração de funções
+void Erro(int);
+token analex(FILE *);
 
 #endif

@@ -1,8 +1,10 @@
 #ifndef ANASINT_H
 #define ANASINT_H
 
+
 // Variáveis Globais
 extern token T;
+extern int qtd_ID;
 
 // Assinatura de Funções
 void Expressao();
@@ -13,6 +15,6 @@ void Fator();
 void prog();
 void cmd();
 void atrib();
-void op_rel();
+void op_rela();
 
 #endif
