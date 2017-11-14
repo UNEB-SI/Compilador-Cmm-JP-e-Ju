@@ -24,9 +24,11 @@ void Expressao() {
 
 //Função OK
 void expr_simp() {
+
   if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "soma") || !strcmp(T.sinal, "substituicao"))) {
     T  = analex(FD);
   }
+
   Termo();
   while (!strcmp(T.categoria, "SN") && (!strcmp(T.lexema, "+") || !strcmp(T.lexema, "-") || !strcmp(T.sinal, "ou_logico"))) {
     T = analex(FD);
@@ -72,8 +74,8 @@ void Fator() {
 
     } else
       T = analex(FD);
-
   }
+
 
   else if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par")) {
     T = analex(FD);
@@ -91,12 +93,15 @@ void Fator() {
     Fator();
   }
 
-  else if (!strcmp(T.categoria, "digito"))
+  else if (!strcmp(T.categoria, "digito")){
     T = analex(FD);
-
-  else if(strcmp(T.lexema, "EOF")){
-    erro(5);
   }
+
+
+  /*else if(strcmp(T.lexema, "EOF")){
+    printf("AQ6\n");
+    erro(5);
+  }*/
 }
 
 // Função que fará a leitura das declarações de variáveis globais, prototipos e criação de funções no código-fonte
@@ -144,6 +149,7 @@ void prog() {
       erro(6);
 
     if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par")) {
+
       strcpy(pilhaSimbolos[--topoSimbolos].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
       topoSimbolos++;
       if (!ehprototipo)
@@ -205,7 +211,6 @@ void prog() {
       //printf("Token: %s\n", T.lexema);
     }
   } while(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "virgula"));
-
   if (!ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
     T = analex(FD);
     //printf("Token: %s\n", T.lexema);
@@ -216,12 +221,13 @@ void prog() {
     erro(8);
   }
   else if (ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves"))) {
+
     erro(9);
   }
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
+
     //printf("Token: riaria %s\n", T.lexema);
     T = analex(FD);
-    //printf("Token: %s\n", T.lexema);
 
     while (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves"))) {
       if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter"))
@@ -229,6 +235,7 @@ void prog() {
                                      ||  !strcmp(T.lexema, "real")
                                      ||  !strcmp(T.lexema, "booleano"))
       { //declaração de variáveis locais da função
+
         strcpy(tipoAux, T.lexema);
         do { //Fará a leitura e armazenamento das variáveis para a pilha de simbolos
           T = analex(FD);
@@ -258,13 +265,16 @@ void prog() {
 
       }
 
-      else if (!strcmp(T.categoria, "ID")) {
+      /*else if (!strcmp(T.categoria, "ID")) {
         cmd();
         // TALVEZ SEJA NECESSÁRIO UM analex(FD) AQUI. VAI DEPENDER DE COMO TERMINA A FUNÇÃO cmd()
-      }
+      }*/
+
+      else if (!strcmp(T.lexema, "EOF"))
+        erro(10);
 
       else {
-        T = analex(FD); //chama o próximo token
+        cmd(); //chama o próximo token
         //printf("Token: %s\n", T.lexema);
       }
 
@@ -324,6 +334,7 @@ void cmd() {
       }
     }
     else if (!strcmp(T.categoria, "PR")) {
+
       if(!strcmp(T.lexema, "retorne")){
         T = analex(FD);
         Expressao();
@@ -385,6 +396,8 @@ void cmd() {
           if (!strcmp(T.sinal, "fecha_par")) {
             T = analex(FD);
             cmd();
+
+            //printf("%s %s\n", T.lexema, T.categoria);
             if (!strcmp(T.lexema, "senao")) {
               T = analex(FD);
               cmd();
