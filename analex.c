@@ -83,6 +83,8 @@ token analex(FILE *FD) {
   int estado = 0, l = 0, d = 0, i = 0;
   char c, lexema[QTD_LEXEMA], digito[QTD_DIGITO];
 
+  if(strcmp(T.lexema, ""))
+    printf("< %s %s >\n", T.categoria, T.lexema);
   //loop principal
   while(1) {
     c = fgetc(FD); //Lê um caractere
@@ -348,13 +350,18 @@ token analex(FILE *FD) {
         break;
 
         case '/':
-          if (!estado)
-            estado = 31;
-          else if (estado == 34)
-            estado = 0;
-          else
-            transicao_sinais(&estado, lexema, &l, c, FD);
-        break;
+        if (!estado){
+          T = copiaTokenSinal("/");
+          estado = 31;
+          return T;
+        }
+        else if (estado == 34)
+          estado = 0;
+        else
+          transicao_sinais(&estado, lexema, &l, c, FD);
+
+          //printf("DENTRO: %s %s\n", T.lexema, T.sinal);
+      break;
 
         case '=':
           switch (estado) {
