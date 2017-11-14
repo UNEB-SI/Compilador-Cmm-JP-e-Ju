@@ -1,5 +1,3 @@
-inteiro eita(semparam) {
-	inteiro toentendendo;
-	real capaz, cacilda, huehue;
-	booleano eounume;
+inteiro coe(semparam) {
+ retorne 5+8;
 }

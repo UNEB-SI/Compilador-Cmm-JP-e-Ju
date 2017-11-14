@@ -106,6 +106,7 @@ void Fator() {
 void prog() {
   int ehprototipo = 0; // 0 - declaração de variável; 1 - prototipo de função
   int ehfuncao = 0; // Verifica se a função possui corpo ou não.
+  int semparam = 0;
   char tipoAux[30]; // variável auxiliar para armazenar o tipo da variável ou função
   printf("Token: %s\n", T.lexema);
 
@@ -155,6 +156,7 @@ void prog() {
         printf("Token: %s\n", T.lexema);
         if (!strcmp(T.categoria, "PR") && !strcmp(T.lexema, "semparam")) { // Verifica se a função não possui parâmetros
           T = analex(FD);
+          semparam = 1;
           printf("Token: %s\n", T.lexema);
           if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_par")) {
             T = analex(FD);
@@ -201,7 +203,7 @@ void prog() {
     else if (ehprototipo && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par"))) {
       erro(7);
     }
-    if (ehprototipo) {
+    if ((ehfuncao || ehprototipo) && !semparam) { //Analex danadinho
       T = analex(FD);
       printf("Token: %s\n", T.lexema);
     }
@@ -220,6 +222,7 @@ void prog() {
     erro(9);
   }
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
+    printf("Token: riaria %s\n", T.lexema);
     T = analex(FD);
     printf("Token: %s\n", T.lexema);
 
