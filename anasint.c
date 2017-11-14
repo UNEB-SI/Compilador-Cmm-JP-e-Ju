@@ -331,6 +331,11 @@ void cmd() {
       else if (!strcmp(T.sinal, "igual")) {
         T = analex(FD);
         Expressao();
+        printf("Aqui %s\n", T.lexema);
+        if(!strcmp(T.sinal, "ponto_virgula"))
+          T = analex(FD);
+        else
+          erro(8);
       }
     }
     else if (!strcmp(T.categoria, "PR")) {
