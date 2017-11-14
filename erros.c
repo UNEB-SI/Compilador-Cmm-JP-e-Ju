@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "analex.h"
 
 char erros[][100] =  {"Sem erro", //0
                      "Caracter invalido!", //1
@@ -19,6 +20,6 @@ char erros[][100] =  {"Sem erro", //0
                    };
 
 void erro(int e) {
-    printf("Erro Sintático: %s\n", erros[e]);
+    printf("\nErro Sintático: %s\nErro na Linha: %d\n", erros[e], qtd_linhas);
     exit(e);
 }

@@ -1,1 +1,5 @@
-prototipo inteiro coe(semparam);
+inteiro eita(semparam) {
+	inteiro toentendendo;
+	real capaz, cacilda, huehue;
+	booleano eounume;
+}

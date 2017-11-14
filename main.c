@@ -17,15 +17,15 @@ int main() {
    return 1;
   }
   T = analex(FD);
-  prog();
-  /*while(1) {
-    T = analex(FD);
+  while(1) {
+    //T = analex(FD);
+    prog();
 
-    printf("< %s, %s >\n", T.categoria, T.lexema);
+    //printf("< %s, %s >\n", T.categoria, T.lexema);
 
     if (strcmp(T.categoria, "FIM_ARQUIVO") == 0)
       break;
-  }*/
+  }
 
   fclose(FD);
   return 0;

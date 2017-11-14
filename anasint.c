@@ -113,8 +113,8 @@ void prog() {
   if (!strcmp(T.categoria, "PR") && !strcmp(T.lexema, "prototipo")) {
     T = analex(FD);
     ehprototipo = 1;
+    printf("Token: %s\n", T.lexema);
   }
-  printf("Token: %s\n", T.lexema);
   //Analisa o token atual e verifica se é um tipo válido para declaração de uma variável ou função
   if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter"))
                                  ||  !strcmp(T.lexema, "inteiro")
@@ -194,22 +194,26 @@ void prog() {
         else {
           topoSimbolos++;
         }
-      } while(!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_parenteses"))); /* Se não for "fecha parenteses )"
+      } while(!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_par"))); /* Se não for "fecha parenteses )"
       o token atual, o laço continuará rodando. Se for vírgula,
       o primeiro analex(FD) do laço pulará */
     }
     else if (ehprototipo && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par"))) {
       erro(7);
     }
-    //T = analex(FD); //ELEMENTO CARA DE PAU
-    printf("Token: %s\n", T.lexema);
+    if (ehprototipo) {
+      T = analex(FD);
+      printf("Token: %s\n", T.lexema);
+    }
   } while(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "virgula"));
-  printf("Token: %s\n", T.lexema);
+
   if (!ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
     T = analex(FD);
     printf("Token: %s\n", T.lexema);
   }
   else if (!ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
+    if (!strcmp(T.categoria, "FIM_ARQUIVO") && !strcmp(T.lexema, "EOF"))
+      erro(0);
     erro(8);
   }
   else if (ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves"))) {
@@ -218,6 +222,7 @@ void prog() {
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
     T = analex(FD);
     printf("Token: %s\n", T.lexema);
+
     while (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves"))) {
       if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter"))
                                      ||  !strcmp(T.lexema, "inteiro")
@@ -225,7 +230,6 @@ void prog() {
                                      ||  !strcmp(T.lexema, "booleano"))
       { //declaração de variáveis locais da função
         strcpy(tipoAux, T.lexema);
-
         do { //Fará a leitura e armazenamento das variáveis para a pilha de simbolos
           T = analex(FD);
           printf("Token: %s\n", T.lexema);
@@ -241,7 +245,7 @@ void prog() {
             printf("Token: %s\n", T.lexema);
           }
           else
-          erro(6);
+            erro(6);
         } while(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "virgula"));
 
         if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
@@ -251,16 +255,27 @@ void prog() {
         else if (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
           erro(8);
         }
+
       }
+
       else if (!strcmp(T.categoria, "ID")) {
         cmd();
         // TALVEZ SEJA NECESSÁRIO UM analex(FD) AQUI. VAI DEPENDER DE COMO TERMINA A FUNÇÃO cmd()
       }
-      else
-      T = analex(FD); //chama o próximo token
-      printf("Token: %s\n", T.lexema);
+
+      else {
+        T = analex(FD); //chama o próximo token
+        printf("Token: %s\n", T.lexema);
+      }
+
     }
   }
+
+  if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
+    T = analex(FD);
+    printf("Token: %s\n", T.lexema);
+  }
+
 }
 
 // Função que realiza os comandos da linguagem
