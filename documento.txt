@@ -1,19 +1,64 @@
-prototipo inteiro fibonacci(inteiro);
+inteiro a,b;
 
-semretorno principal (semparam) {
+prototipo semretorno funcao (inteiro,real x,caracter,booleano y);
 
-     inteiro i, n;
+semretorno funcao(inteiro m, real x, caracter n, booleano p){
 
-     leia(n);
-     imprima(enter);
-     para (i=0; i<n; i=i+1) 
-            imprima(fibonacci(i+1));
-      retorne;
+
+inteiro o;
+
+enquanto (1){
+
+	retorne;
+	retorne (a+b);
 }
 
-inteiro fibbonaci(inteiro num) {
+real j;
 
-      se ((num==1) || (num==2)) retorne 1;
-      senao 
-             retorne (fibonacci(num-1)+fibonacci(num-2));
+
+se(a<b){
+}senao{
+	para(;;){
+
+		se(a>b){}
+		a = j + c;
+		se(a>b){}
+		bool = 12;
+		se((a==b) && (b !=a ) || (a<b)){
+			funcao((a==b) && (b !=a ) || (a*b), a-b, !j);
+		}
+	}
 }
+
+
+}
+
+booleano func (semparam){
+
+
+inteiro o;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+caracter j;
+{{{{o = o+y;}}}}
+real y;
+
+caracter char;
+
+char = 'c';
+
+enquanto(7)
+	a = b+char;
+
+para(j=8;;j=j+1)
+	se(a != b)
+		enquanto(1){}
+	senao
+		para(;;)
+			se(1){}
+
+}
+
+
+real var1,var2;
+
+prototipo real funcion(semparam);

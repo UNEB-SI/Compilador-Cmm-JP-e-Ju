@@ -4,6 +4,7 @@
 #include "analex.c"
 #include "anasint.h"
 #include "erros.c"
+#include <unistd.h>
 
 // INICIO DOS PROCEDIMENTOS DE ANÁLISE DE EXPRESSÕES ARITMÉTICAS
 
@@ -137,7 +138,6 @@ void prog() {
     //printf("Token: %s\n", T.lexema);
     //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
     if (!strcmp(T.categoria, "ID") || !strcmp(T.lexema, "principal")) {
-      //printf("ENTREI\n");
       strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
       strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
       strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
@@ -189,7 +189,6 @@ void prog() {
         pilhaSimbolos[topoSimbolos].ehZumbi = 0;
         pilhaSimbolos[topoSimbolos].codigo = qtd_ID++; //armazena o codigo do simbolo associando a quantidade de identificadores. Depois incrementa o contador
         if (!strcmp(T.categoria, "ID")) {
-          //printf("ENTREI\n");
           strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
           topoSimbolos++;
           T = analex(FD);
@@ -296,15 +295,15 @@ void prog() {
 void cmd() {
   if (!strcmp(T.categoria, "PR") || !strcmp(T.categoria, "ID") || !strcmp(T.categoria, "SN")) {
     if (!strcmp(T.categoria, "SN")) {
-      if (!strcmp(T.sinal, "ponto_virgula"))
-      T = analex(FD);
-      else if (!strcmp(T.sinal, "abre_chaves")) {
+      if (!strcmp(T.lexema, ";"))
         T = analex(FD);
-        while (!(!strcmp(T.sinal, "fecha_chaves"))) {
+      else if (!strcmp(T.lexema, "{")) {
+        T = analex(FD);
+        while (strcmp(T.lexema, "}")) {
           cmd();
         }
-        if (!strcmp(T.sinal, "fecha_chaves"))
-        T = analex(FD);
+        if (!strcmp(T.lexema, "}"))
+          T = analex(FD);
         else {
           erro(10);
         }
@@ -312,7 +311,7 @@ void cmd() {
     }
     else if (!strcmp(T.categoria, "ID")) {
       T = analex(FD);
-      if (!strcmp(T.sinal, "abre_par")) {
+      if (!strcmp(T.sinal, "abre_par")) { //verifica se o token atual é abre parenteses
         T = analex(FD);
         Expressao();
 
@@ -332,7 +331,7 @@ void cmd() {
           erro(3);
         }
       }
-      else if (!strcmp(T.sinal, "igual")) {
+      else if (!strcmp(T.sinal, "igual")) { //verifica se o token atual é igual
         T = analex(FD);
         Expressao();
         if(!strcmp(T.sinal, "ponto_virgula"))
@@ -404,8 +403,6 @@ void cmd() {
           if (!strcmp(T.sinal, "fecha_par")) {
             T = analex(FD);
             cmd();
-
-            //printf("%s %s\n", T.lexema, T.categoria);
             if (!strcmp(T.lexema, "senao")) {
               T = analex(FD);
               cmd();
