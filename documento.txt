@@ -1,3 +1,19 @@
-inteiro coe(semparam) {
- retorne 5+8;
+prototipo inteiro fibonacci(inteiro);
+
+semretorno principal (semparam) {
+
+     inteiro i, n;
+
+     leia(n);
+     imprima(enter);
+     para (i=0; i<n; i=i+1) 
+            imprima(fibonacci(i+1));
+      retorne;
+}
+
+inteiro fibbonaci(inteiro num) {
+
+      se ((num==1) || (num==2)) retorne 1;
+      senao 
+             retorne (fibonacci(num-1)+fibonacci(num-2));
 }

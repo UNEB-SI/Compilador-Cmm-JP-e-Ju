@@ -64,11 +64,12 @@ void Fator() {
             T = analex(FD);
             Expressao();
           }
-          if(!strcmp(T.sinal, "fecha_par"))
-          T = analex(FD);
-          else {
-            erro(3);
-          }
+
+        }
+        if(!strcmp(T.sinal, "fecha_par"))
+        T = analex(FD);
+        else {
+          erro(3);
         }
       }
 
@@ -135,7 +136,8 @@ void prog() {
     T = analex(FD);
     //printf("Token: %s\n", T.lexema);
     //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
-    if (!strcmp(T.categoria, "ID")) {
+    if (!strcmp(T.categoria, "ID") || !strcmp(T.lexema, "principal")) {
+      //printf("ENTREI\n");
       strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
       strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
       strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
@@ -187,6 +189,7 @@ void prog() {
         pilhaSimbolos[topoSimbolos].ehZumbi = 0;
         pilhaSimbolos[topoSimbolos].codigo = qtd_ID++; //armazena o codigo do simbolo associando a quantidade de identificadores. Depois incrementa o contador
         if (!strcmp(T.categoria, "ID")) {
+          //printf("ENTREI\n");
           strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
           topoSimbolos++;
           T = analex(FD);
@@ -242,6 +245,7 @@ void prog() {
           //printf("Token: %s\n", T.lexema);
           //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
           if (!strcmp(T.categoria, "ID")) {
+            //printf("ENTREI\n");
             strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
             strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
             strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
@@ -331,7 +335,6 @@ void cmd() {
       else if (!strcmp(T.sinal, "igual")) {
         T = analex(FD);
         Expressao();
-        printf("Aqui %s\n", T.lexema);
         if(!strcmp(T.sinal, "ponto_virgula"))
           T = analex(FD);
         else
@@ -361,7 +364,7 @@ void cmd() {
             if(!strcmp(T.sinal, "ponto_virgula")) {
               T = analex(FD);
               //Verificar com Atta se é atrib ou expressão
-              Expressao();
+              atrib();
               if (!strcmp(T.sinal, "fecha_par")) {
                 T = analex(FD);
                 cmd();

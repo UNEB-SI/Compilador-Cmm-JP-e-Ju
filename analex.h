@@ -43,7 +43,7 @@ token sinais[] = { {"SN", "+", "mais"}, {"SN", "-", "menos"}, {"SN", "*", "aster
                    {"SN", "(", "abre_par"}, {"SN", ")", "fecha_par"}, {"SN", "{", "abre_chaves"},
                    {"SN", "}", "fecha_chaves"}, {"SN", "[", "abre_colchetes"}, {"SN", "]", "fecha_colchetes"},
                    {"SN", "&&", "e_logico"}, {"SN", "||", "ou_logico"}, {"SN", "!", "nao_logico"},
-                   {"SN", "!=", "nao_igual"}, {"SN", "\'", "apostofo"}, {"SN", "\"", "aspas"},
+                   {"SN", "!=", "nao_igual"}, {"SN", "==", "igual_igual"}, {"SN", "\'", "apostofo"}, {"SN", "\"", "aspas"},
                    {"SN", ";", "ponto_virgula"}, {"SN", ".", "ponto"}, {"SN", ",", "virgula"}, {"SN", "\\", "contra-barra"}
                 };
 
