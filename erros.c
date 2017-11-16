@@ -20,6 +20,6 @@ char erros[][100] =  {"Sem erro", //0
                    };
 
 void erro(int e) {
-    printf("\nErro Sintático: %s\nErro na Linha: %d\n", erros[e], qtd_linhas);
+    printf("\nErro Sintático: %s\nErro na Linha: %d\n", erros[e], qtd_linhas-1);
     exit(e);
 }
