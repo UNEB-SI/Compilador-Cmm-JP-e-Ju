@@ -45,6 +45,7 @@ real y;
 caracter char;
 
 char = 'c';
+char = "cadeiacon";
 
 enquanto(7)
 	a = b+char;
@@ -57,7 +58,6 @@ para(j=8;;j=j+1)
 			se(1){}
 
 }
-
 
 real var1,var2;
 

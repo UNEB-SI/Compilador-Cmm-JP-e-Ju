@@ -22,17 +22,6 @@ typedef struct Token {
   float valor_float;
 } token;
 
-//Definição do tipo Símbolo
-typedef struct simbolos {
-  char nome[30], tipo[30], categoria[30];
-  Escopo escopo;
-  int ehZumbi;
-  int codigo;
-  int valor_int;
-  float valor_float;
-  char valor_char;
-} simbolo;
-
                     // 0     1     2      3        4       5       6          7
 char *categorias[] = {"PR", "SN", "ID", "CT_I", "CT_R", "CT_LT", "CT_C", "FIM_ARQUIVO"};
 
@@ -63,9 +52,6 @@ int qtd_ID = 0;
 
 char literais[100][100];
 int qtd_literais = 0;
-
-simbolo pilhaSimbolos[100];
-int topoSimbolos = 0;
 
 // Assinatura de funções
 int ehsinal(char);

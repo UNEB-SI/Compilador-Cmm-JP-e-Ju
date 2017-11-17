@@ -3,8 +3,10 @@
 #include <string.h>
 #include "analex.c"
 #include "anasint.h"
+#include "GerenciadorTS.c"
 #include "erros.c"
 #include <unistd.h>
+
 
 // INICIO DOS PROCEDIMENTOS DE ANÁLISE DE EXPRESSÕES ARITMÉTICAS
 
@@ -54,7 +56,9 @@ void Sobra() {
 //Função OK
 void Fator() {
   if(!strcmp(T.categoria, "ID") || !strcmp(T.categoria, "CT_I") ||
-  !strcmp(T.categoria, "CT_R") || !strcmp(T.categoria, "CT_C")) {
+  !strcmp(T.categoria, "CT_R") || !strcmp(T.categoria, "CT_C") ||
+  !strcmp(T.categoria, "CT_LT"))
+  {
     if (!strcmp(T.categoria, "ID")){
       T = analex(FD);
       if(!strcmp(T.sinal, "abre_par")){
@@ -127,7 +131,8 @@ void prog() {
                                  ||  !strcmp(T.lexema, "booleano")
                                  ||  !strcmp(T.lexema, "semretorno"))
   {
-    strcpy(tipoAux, T.lexema); //Armazena o token na variavel auxiliar para guardar os tipos dos identificadores na pilha
+    if (!ehprototipo)
+      strcpy(tipoAux, T.lexema); //Armazena o token na variavel auxiliar para guardar os tipos dos identificadores na pilha
   }
   else {
     erro(14);
@@ -138,12 +143,15 @@ void prog() {
     //printf("Token: %s\n", T.lexema);
     //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
     if (!strcmp(T.categoria, "ID") || !strcmp(T.lexema, "principal")) {
-      strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
-      strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
-      strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
-      pilhaSimbolos[topoSimbolos].escopo = global;
-      pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-      topoSimbolos++;
+      if (!ehprototipo) {
+        strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
+        strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
+        strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
+        pilhaSimbolos[topoSimbolos].escopo = global;
+        pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+        printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo = global);
+        topoSimbolos++;
+      }
       T = analex(FD);
       //printf("Token: %s\n", T.lexema);
     }
@@ -151,11 +159,12 @@ void prog() {
       erro(6);
 
     if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par")) {
-
-      strcpy(pilhaSimbolos[--topoSimbolos].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
-      topoSimbolos++;
-      if (!ehprototipo)
+      if (!ehprototipo) {
+        strcpy(pilhaSimbolos[--topoSimbolos].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
+        topoSimbolos++;
         ehfuncao = 1;
+      }
+
       do { //armazena os paramentros na pilha de sinais
         T = analex(FD);
         //printf("Token: %s\n", T.lexema);
@@ -177,20 +186,26 @@ void prog() {
                                             ||  !strcmp(T.lexema, "real")
                                             ||  !strcmp(T.lexema, "booleano"))
         {
-          strcpy(pilhaSimbolos[topoSimbolos].tipo, T.lexema);
+          if (!ehprototipo)
+            strcpy(pilhaSimbolos[topoSimbolos].tipo, T.lexema);
           T = analex(FD);
           //printf("Token: %s\n", T.lexema);
         }
         else {
           erro(12);
         }
-        strcpy(pilhaSimbolos[topoSimbolos].categoria, "param");
-        pilhaSimbolos[topoSimbolos].escopo = local;
-        pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-        pilhaSimbolos[topoSimbolos].codigo = qtd_ID++; //armazena o codigo do simbolo associando a quantidade de identificadores. Depois incrementa o contador
+        if (!ehprototipo) {
+          strcpy(pilhaSimbolos[topoSimbolos].categoria, "param");
+          pilhaSimbolos[topoSimbolos].escopo = local;
+          pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+          pilhaSimbolos[topoSimbolos].codigo = qtd_ID++; //armazena o codigo do simbolo associando a quantidade de identificadores. Depois incrementa o contador
+        }
         if (!strcmp(T.categoria, "ID")) {
-          strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
-          topoSimbolos++;
+          if (!ehprototipo) {
+            strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
+            printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo);
+            topoSimbolos++;
+          }
           T = analex(FD);
           //printf("Token: %s\n", T.lexema);
         }
@@ -199,7 +214,10 @@ void prog() {
           erro(13);
         }
         else {
-          topoSimbolos++;
+          if (!ehprototipo) {
+            printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo);
+            topoSimbolos++;
+          }
         }
       } while(!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_par"))); /* Se não for "fecha parenteses )"
       o token atual, o laço continuará rodando. Se for vírgula,
@@ -213,6 +231,7 @@ void prog() {
       //printf("Token: %s\n", T.lexema);
     }
   } while(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "virgula"));
+
   if (!ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
     T = analex(FD);
     //printf("Token: %s\n", T.lexema);
@@ -250,6 +269,7 @@ void prog() {
             strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
             pilhaSimbolos[topoSimbolos].escopo = local;
             pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+            printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo);
             topoSimbolos++;
             T = analex(FD);
             //printf("Token: %s\n", T.lexema);
@@ -283,9 +303,9 @@ void prog() {
 
     }
   }
-
-  if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
+if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
     T = analex(FD);
+    apagaSimbolos();
     //printf("Token: %s\n", T.lexema);
   }
 

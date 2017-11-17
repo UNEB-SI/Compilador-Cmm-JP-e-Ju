@@ -15,5 +15,6 @@ void prog();
 void cmd();
 void atrib();
 void op_rel();
+void apagaSimbolos();
 
 #endif
