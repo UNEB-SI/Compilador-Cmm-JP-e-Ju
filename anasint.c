@@ -12,52 +12,79 @@
 
 //Função OK
 void Expressao() {
-  expr_simp();
+  float primOp = 0, resultado = 0;
+  static int i = 0; //Contador estático que não mudará seu valor independente da vez que a função seja chamada
+
+  printf("------ ENTROU NO EXPR %d\n", i);
+  primOp = expr_simp();
   if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "maior_igual") || !strcmp(T.sinal, "menor_igual")
-                                                                        || !strcmp(T.sinal, "menor")
-                                                                        || !strcmp(T.sinal, "maior")
-                                                                        || !strcmp(T.sinal, "nao_igual")
-                                                                        || !strcmp(T.sinal, "igual_igual")))
+                                                                     || !strcmp(T.sinal, "menor")
+                                                                     || !strcmp(T.sinal, "maior")
+                                                                     || !strcmp(T.sinal, "nao_igual")
+                                                                     || !strcmp(T.sinal, "igual_igual")))
   {
     //T = analex(FD);
     op_rel();
-    expr_simp();
+    resultado = expr_simp();
   }
+  else
+    resultado = primOp; /*Se não houver nenhum operador relacional pra comparar com outra expressão, o
+                        resultado é o próprio valor da primeira operação*/
+  printf("----- EXPRESSAO %d: %.1f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
 }
 
 //Função OK
-void expr_simp() {
+float expr_simp() {
+  int primOp, resultado;
+  primOp = resultado = 0;
 
   if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "soma") || !strcmp(T.sinal, "substituicao"))) {
     T  = analex(FD);
   }
 
-  Termo();
+  resultado = primOp = Termo();
   while (!strcmp(T.categoria, "SN") && (!strcmp(T.lexema, "+") || !strcmp(T.lexema, "-") || !strcmp(T.sinal, "ou_logico"))) {
-    T = analex(FD);
-    Termo();
+    if (!strcmp(T.lexema, "+")) { // realiza a soma dos operandos
+      T = analex(FD);
+      resultado = primOp + Termo();
+    }
+    else if (!strcmp(T.lexema, "-")) { // realiza a subtração dos operandos
+      T = analex(FD);
+      resultado = primOp - Termo();
+    }
+    primOp = resultado; /* Usa 'primOp' como variável auxiliar para outros termos serem calculados junto
+                          ao resultado depois da virada do laço */
   }
+  return resultado;
 }
 
 //Função OK
-void Termo() {
-  Fator();
+float Termo() {
+  float primOp, resultado;
+  resultado = primOp = Fator();
+
   while (!strcmp(T.categoria, "SN") && (!strcmp(T.lexema, "*") || !strcmp(T.lexema, "/") || !strcmp(T.sinal, "e_logico"))) {
-    Sobra();
+    if (!strcmp(T.lexema, "*")) { // realiza a multiplicação dos operandos
+      T = analex(FD);
+      resultado = primOp * Termo();
+    }
+    else if (!strcmp(T.lexema, "/")) { // realiza a divisão dos operandos
+      T = analex(FD);
+      resultado = primOp / Termo();
+    }
+    primOp = resultado;
   }
+
+  return resultado;
 }
 
 //Função OK
-void Sobra() {
-  T = analex(FD);
-  Fator();
-}
+float Fator() {
+  float resultado=0;
 
-//Função OK
-void Fator() {
   if(!strcmp(T.categoria, "ID") || !strcmp(T.categoria, "CT_I") ||
-  !strcmp(T.categoria, "CT_R") || !strcmp(T.categoria, "CT_C") ||
-  !strcmp(T.categoria, "CT_LT"))
+   !strcmp(T.categoria, "CT_R") || !strcmp(T.categoria, "CT_C") ||
+   !strcmp(T.categoria, "CT_LT"))
   {
     if (!strcmp(T.categoria, "ID")){
       T = analex(FD);
@@ -78,8 +105,10 @@ void Fator() {
         }
       }
 
-    } else
+    } else {
+      resultado = T.valor_int;
       T = analex(FD);
+    }
   }
 
 
@@ -100,14 +129,15 @@ void Fator() {
   }
 
   else if (!strcmp(T.categoria, "digito")){
+    resultado = T.valor_int;
     T = analex(FD);
   }
-
 
   /*else if(strcmp(T.lexema, "EOF")){
     printf("AQ6\n");
     erro(5);
   }*/
+  return resultado;
 }
 
 // Função que fará a leitura das declarações de variáveis globais, prototipos e criação de funções no código-fonte
@@ -149,7 +179,6 @@ void prog() {
         strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
         pilhaSimbolos[topoSimbolos].escopo = global;
         pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-        printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo = global);
         topoSimbolos++;
       }
       T = analex(FD);
@@ -203,7 +232,6 @@ void prog() {
         if (!strcmp(T.categoria, "ID")) {
           if (!ehprototipo) {
             strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
-            printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo);
             topoSimbolos++;
           }
           T = analex(FD);
@@ -215,7 +243,6 @@ void prog() {
         }
         else {
           if (!ehprototipo) {
-            printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo);
             topoSimbolos++;
           }
         }
@@ -269,7 +296,6 @@ void prog() {
             strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
             pilhaSimbolos[topoSimbolos].escopo = local;
             pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-            printf("%s | %s | %s | %d \n", pilhaSimbolos[topoSimbolos].nome, pilhaSimbolos[topoSimbolos].tipo, pilhaSimbolos[topoSimbolos].categoria, pilhaSimbolos[topoSimbolos].escopo);
             topoSimbolos++;
             T = analex(FD);
             //printf("Token: %s\n", T.lexema);
@@ -308,6 +334,7 @@ if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
     apagaSimbolos();
     //printf("Token: %s\n", T.lexema);
   }
+
 
 }
 

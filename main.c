@@ -22,10 +22,12 @@ int main() {
     prog();
 
     //printf("< %s, %s >\n", T.categoria, T.lexema);
-
+    
     if (strcmp(T.categoria, "FIM_ARQUIVO") == 0)
       break;
   }
+
+  printf("\nAnálise Sintática efetuada com Sucesso!\n");
 
   fclose(FD);
   return 0;

@@ -6,11 +6,9 @@ extern token T;
 
 // Assinatura de Funções
 void Expressao();
-void expr_simp();
-void Termo();
-void Resto();
-void Sobra();
-void Fator();
+float expr_simp();
+float Termo();
+float Fator();
 void prog();
 void cmd();
 void atrib();
