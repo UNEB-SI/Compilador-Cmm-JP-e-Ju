@@ -7,9 +7,7 @@ typedef struct simbolos {
   Escopo escopo;
   int ehZumbi;
   int codigo;
-  int valor_int;
-  float valor_float;
-  char valor_char;
+  float valor;
 } simbolo;
 
 simbolo pilhaSimbolos[100];

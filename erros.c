@@ -16,7 +16,9 @@ char erros[][100] =  {"Sem erro", //0
                      "Parâmetro vazio especificado. Não espera-se mais parâmetros!", //11
                      "Tipo do Parâmetro esperado!", //12
                      "Nome de Parâmetro de Função omitido!", //13
-                     "Tipo de identificador não especificado!" //14
+                     "Tipo de identificador não especificado!", //14
+                     "Identificador não declarado!", //15
+                     "Tipo do Identificador não compatível com a expressão!" //16
                    };
 
 void erro(int e) {

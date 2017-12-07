@@ -11,7 +11,7 @@
 // INICIO DOS PROCEDIMENTOS DE ANÁLISE DE EXPRESSÕES ARITMÉTICAS
 
 //Função OK
-void Expressao() {
+float Expressao() {
   float primOp = 0, resultado = 0;
   static int i = 0; //Contador estático que não mudará seu valor independente da vez que a função seja chamada
 
@@ -31,11 +31,12 @@ void Expressao() {
     resultado = primOp; /*Se não houver nenhum operador relacional pra comparar com outra expressão, o
                         resultado é o próprio valor da primeira operação*/
   printf("----- EXPRESSAO %d: %.1f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
+  return resultado;
 }
 
 //Função OK
 float expr_simp() {
-  int primOp, resultado;
+  float primOp, resultado;
   primOp = resultado = 0;
 
   if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "soma") || !strcmp(T.sinal, "substituicao"))) {
@@ -55,6 +56,7 @@ float expr_simp() {
     primOp = resultado; /* Usa 'primOp' como variável auxiliar para outros termos serem calculados junto
                           ao resultado depois da virada do laço */
   }
+
   return resultado;
 }
 
@@ -86,17 +88,24 @@ float Fator() {
    !strcmp(T.categoria, "CT_R") || !strcmp(T.categoria, "CT_C") ||
    !strcmp(T.categoria, "CT_LT"))
   {
-    if (!strcmp(T.categoria, "ID")){
+    if (!strcmp(T.categoria, "ID")) {
+      int i=0;
+      while (i < topoSimbolos) {
+        if (!strcmp(T.lexema, pilhaSimbolos[i].nome))
+          break;
+        i++;
+      }
+      if (i == topoSimbolos)
+        erro(15);
       T = analex(FD);
-      if(!strcmp(T.sinal, "abre_par")){
+      if(!strcmp(T.sinal, "abre_par")) {
         T = analex(FD);
         Expressao();
-        if(!strcmp(T.sinal, "virgula")){
-          while(!strcmp(T.sinal, "virgula")){
+        if(!strcmp(T.sinal, "virgula")) {
+          while(!strcmp(T.sinal, "virgula")) {
             T = analex(FD);
             Expressao();
           }
-
         }
         if(!strcmp(T.sinal, "fecha_par"))
         T = analex(FD);
@@ -104,9 +113,24 @@ float Fator() {
           erro(3);
         }
       }
-
-    } else {
-      resultado = T.valor_int;
+      else if (!strcmp(pilhaSimbolos[i].categoria, "variavel")) {
+        if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(T.categoria, PR[3])) //verifica se o número é do tipo inteiro ou real
+          resultado = pilhaSimbolos[i].valor;
+        else if (!strcmp(pilhaSimbolos[i].tipo, PR[1])) { //verifica se o número é do tipo char
+          resultado = pilhaSimbolos[i].valor;
+        }
+        else
+          erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
+      }
+    }
+    else { // Obtenção de valores para cálculos de expressões aritméticas
+      if (!strcmp(T.categoria, categorias[3])) //verifica se o número é do tipo inteiro
+        resultado = T.valor;
+      else if (!strcmp(T.categoria, categorias[4])) //verifica se o número é real (float)
+        resultado = T.valor;
+      else if (!strcmp(T.categoria, categorias[6])) { //verifica se o número é caracter (char)
+        resultado = T.valor;
+      }
       T = analex(FD);
     }
   }
@@ -129,7 +153,7 @@ float Fator() {
   }
 
   else if (!strcmp(T.categoria, "digito")){
-    resultado = T.valor_int;
+    resultado = T.valor;
     T = analex(FD);
   }
 
@@ -137,6 +161,7 @@ float Fator() {
     printf("AQ6\n");
     erro(5);
   }*/
+
   return resultado;
 }
 
@@ -329,12 +354,11 @@ void prog() {
 
     }
   }
-if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
+  if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
     T = analex(FD);
     apagaSimbolos();
     //printf("Token: %s\n", T.lexema);
   }
-
 
 }
 
@@ -357,7 +381,18 @@ void cmd() {
       }
     }
     else if (!strcmp(T.categoria, "ID")) {
+      int i=0;
+      while (i < topoSimbolos) {
+        if (!strcmp(T.lexema, pilhaSimbolos[i].nome))
+          break;
+        i++;
+      }
+      if (i == topoSimbolos) {
+          erro(15); //o identificador não foi declarado antes.
+      }
+
       T = analex(FD);
+
       if (!strcmp(T.sinal, "abre_par")) { //verifica se o token atual é abre parenteses
         T = analex(FD);
         Expressao();
@@ -380,11 +415,14 @@ void cmd() {
       }
       else if (!strcmp(T.sinal, "igual")) { //verifica se o token atual é igual
         T = analex(FD);
-        Expressao();
+        pilhaSimbolos[i].valor = Expressao();
         if(!strcmp(T.sinal, "ponto_virgula"))
           T = analex(FD);
         else
           erro(8);
+      }
+      else if (strcmp(T.sinal, "ponto_virgula")) { // Se o sinal não for ponto e vírgula, apresenta erro
+        erro(8); //Falta sinal de ponto e vírgula
       }
     }
     else if (!strcmp(T.categoria, "PR")) {
@@ -467,12 +505,21 @@ void cmd() {
 //Função OK
 void atrib(){
   if(!strcmp(T.categoria, "ID")){
-    T = analex(FD);
-    if (!strcmp(T.sinal, "igual")){
-      T = analex(FD);
-      Expressao();
+    int i=0;
+    while (i < topoSimbolos) {
+      if (!strcmp(T.lexema, pilhaSimbolos[i].nome))
+        break;
+      i++;
     }
-
+    if (i == topoSimbolos)
+      erro(15);
+    else {
+      T = analex(FD);
+      if (!strcmp(T.sinal, "igual")){
+        T = analex(FD);
+        pilhaSimbolos[i].valor = Expressao();
+      }
+    }
   }
 }
 

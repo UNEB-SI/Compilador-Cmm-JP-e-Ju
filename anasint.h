@@ -5,7 +5,7 @@
 extern token T;
 
 // Assinatura de Funções
-void Expressao();
+float Expressao();
 float expr_simp();
 float Termo();
 float Fator();

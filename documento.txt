@@ -1,6 +1,10 @@
-inteiro a;
+inteiro a,d;
+caracter pera;
 
 inteiro soma(inteiro b) {
+    pera = 'b';
     a = 5 * 3;
-    b = 5*4/2+20-8*2+3;
+    d = 5*4/2+20-8*2+3;
+    inteiro c;
+    c = a+d+pera+'z';
 }

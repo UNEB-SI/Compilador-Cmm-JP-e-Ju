@@ -568,7 +568,7 @@ token analex(FILE *FD) {
             strcpy(T.categoria, categorias[6]);
             lexema[l++] = '\0';
             strcpy(T.lexema, lexema);
-
+            T.valor = lexema[0];
             estado = 27;
             return T;
           }
@@ -668,7 +668,7 @@ token analex(FILE *FD) {
         digito[d++] = '\0';
         strcpy(T.categoria, categorias[3]);
         strcpy(T.lexema, digito);
-        T.valor_int = atoi(digito);
+        T.valor = atoi(digito);
         ungetc(c,FD);
         return T;
 
@@ -676,7 +676,7 @@ token analex(FILE *FD) {
         digito[d++] = '\0';
         strcpy(T.categoria, categorias[4]);
         strcpy(T.lexema, digito);
-        T.valor_float = atof(digito);
+        T.valor = atof(digito);
         ungetc(c,FD);
         return T;
 

@@ -18,8 +18,7 @@ typedef struct Token {
   char lexema[30];
   char sinal[30];
   int codigo;
-  int valor_int;
-  float valor_float;
+  float valor;
 } token;
 
                     // 0     1     2      3        4       5       6          7
