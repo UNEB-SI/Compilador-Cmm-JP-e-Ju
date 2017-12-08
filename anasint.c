@@ -47,11 +47,29 @@ float expr_simp() {
   while (!strcmp(T.categoria, "SN") && (!strcmp(T.lexema, "+") || !strcmp(T.lexema, "-") || !strcmp(T.sinal, "ou_logico"))) {
     if (!strcmp(T.lexema, "+")) { // realiza a soma dos operandos
       T = analex(FD);
-      resultado = primOp + Termo();
+      resultado = Termo();
+      if (primOp != resultado)
+        erro(17);
+      else {
+        if (!resultado)
+          printf("ADD\n");
+        else if (resultado == 1)
+          printf("ADDF\n");
+      }
+      //resultado = primOp + Termo();
     }
     else if (!strcmp(T.lexema, "-")) { // realiza a subtração dos operandos
       T = analex(FD);
-      resultado = primOp - Termo();
+      resultado = Termo();
+      if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
+        erro(17);
+      else {
+        if (!resultado)
+          printf("SUB\n");
+        else if (resultado == 1)
+          printf("SUBF\n");
+      }
+      //resultado = primOp - Termo();
     }
     primOp = resultado; /* Usa 'primOp' como variável auxiliar para outros termos serem calculados junto
                           ao resultado depois da virada do laço */
@@ -68,11 +86,29 @@ float Termo() {
   while (!strcmp(T.categoria, "SN") && (!strcmp(T.lexema, "*") || !strcmp(T.lexema, "/") || !strcmp(T.sinal, "e_logico"))) {
     if (!strcmp(T.lexema, "*")) { // realiza a multiplicação dos operandos
       T = analex(FD);
-      resultado = primOp * Termo();
+      resultado = Termo();
+      if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
+        erro(17);
+      else {
+        if (!resultado)
+          printf("MUL\n");
+        else if (resultado == 1)
+          printf("MULF\n");
+      }
+      //resultado = primOp * Termo();
     }
     else if (!strcmp(T.lexema, "/")) { // realiza a divisão dos operandos
       T = analex(FD);
-      resultado = primOp / Termo();
+      resultado = Termo();
+      if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
+        erro(17);
+      else {
+        if (!resultado)
+          printf("DIV\n");
+        else if (resultado == 1)
+          printf("DIVF\n");
+      }
+      //resultado = primOp / Termo();
     }
     primOp = resultado;
   }
@@ -88,57 +124,105 @@ float Fator() {
    !strcmp(T.categoria, "CT_R") || !strcmp(T.categoria, "CT_C") ||
    !strcmp(T.categoria, "CT_LT"))
   {
-    if (!strcmp(T.categoria, "ID")) {
-      int i=0;
-      while (i < topoSimbolos) {
+    if (!strcmp(T.categoria, "ID")) { // Tratamento de operações com identificador: variável ou retorno de chamada de função
+      int i=0, j;
+      while (i < topoSimbolos) { // Busca encontrar o identificador na pilha de Símbolos
         if (!strcmp(T.lexema, pilhaSimbolos[i].nome))
-          break;
+          break; //Encontra o identificador na pilha e sai do laço
         i++;
       }
       if (i == topoSimbolos)
         erro(15);
       T = analex(FD);
+      j=i+1; //contador para verificar se o próximo elementro na pilha é um parâmetro de função
       if(!strcmp(T.sinal, "abre_par")) {
         T = analex(FD);
-        Expressao();
-        if(!strcmp(T.sinal, "virgula")) {
-          while(!strcmp(T.sinal, "virgula")) {
-            T = analex(FD);
-            Expressao();
+        if (!strcmp(pilhaSimbolos[j].categoria, "param")) {
+          resultado = Expressao();
+          if (resultado == 0) { //verifica se a expressão no parâmetro é do tipo inteiro
+            if (!strcmp(pilhaSimbolos[j].tipo, PR[2])) { //verifica se o parâmetro é do tipo inteiro
+              j++;
+            }
+            else erro(18); //Erro de tipo de parâmtro incompatível
+          }
+          else if (resultado == 1) { //verifica se a expressão no parâmetro é do tipo real
+            if (!strcmp(pilhaSimbolos[j].categoria, "param")) {
+              if (!strcmp(pilhaSimbolos[j].tipo, PR[3])) { //verifica se o parâmetro é do tipo real
+                j++;
+              }
+              else erro(18);
+            }
+          }
+
+          if(!strcmp(T.sinal, "virgula")) {
+            while(!strcmp(T.sinal, "virgula")) {
+              T = analex(FD);
+              if (!strcmp(pilhaSimbolos[j].categoria, "param")) {
+                resultado = Expressao();
+                if (resultado == 0) {
+                  if (!strcmp(pilhaSimbolos[j].tipo, PR[2])) {
+                    j++;
+                  }
+                  else erro(18);
+                }
+                else if (resultado == 1) {
+                  if (!strcmp(pilhaSimbolos[j].categoria, "param")) {
+                    if (!strcmp(pilhaSimbolos[j].tipo, PR[3])) {
+                      j++;
+                    }
+                    else erro(18);
+                  }
+                }
+              }
+            }
           }
         }
-        if(!strcmp(T.sinal, "fecha_par"))
-        T = analex(FD);
+        if(!strcmp(T.sinal, "fecha_par")) {
+          if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[1])) //verifica se o número é do tipo inteiro ou char
+            resultado = 0;
+          else if (!strcmp(pilhaSimbolos[i].tipo, PR[3])) //verifica se o número é do tipo real
+            resultado = 1;
+          else
+            erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
+          printf("LOAD %d\n", pilhaSimbolos[i].endereco);
+          T = analex(FD);
+        }
         else {
           erro(3);
         }
       }
       else if (!strcmp(pilhaSimbolos[i].categoria, "variavel")) {
-        if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(T.categoria, PR[3])) //verifica se o número é do tipo inteiro ou real
-          resultado = pilhaSimbolos[i].valor;
-        else if (!strcmp(pilhaSimbolos[i].tipo, PR[1])) { //verifica se o número é do tipo char
-          resultado = pilhaSimbolos[i].valor;
-        }
+        if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[1])) //verifica se o número é do tipo inteiro ou char
+          resultado = 0;
+        else if (!strcmp(pilhaSimbolos[i].tipo, PR[3])) //verifica se o número é do tipo real
+          resultado = 1;
+        /*else if (!strcmp(pilhaSimbolos[i].tipo, PR[1])) { //verifica se o número é do tipo char
+          resultado = 2;
+        }*/
         else
           erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
+        printf("LOAD %d\n", pilhaSimbolos[i].endereco);
       }
     }
     else { // Obtenção de valores para cálculos de expressões aritméticas
-      if (!strcmp(T.categoria, categorias[3])) //verifica se o número é do tipo inteiro
-        resultado = T.valor;
-      else if (!strcmp(T.categoria, categorias[4])) //verifica se o número é real (float)
-        resultado = T.valor;
-      else if (!strcmp(T.categoria, categorias[6])) { //verifica se o número é caracter (char)
-        resultado = T.valor;
+      if (!strcmp(T.categoria, categorias[3]) || !strcmp(T.categoria, categorias[6])) { //verifica se o número é do tipo inteiro ou char
+        resultado = 0;
+        printf("PUSH %.0f\n", T.valor);
       }
+      else if (!strcmp(T.categoria, categorias[4])) { //verifica se o número é real (float)
+        resultado = 1;
+        printf("PUSH %f\n", T.valor);
+      }
+      /*else if (!strcmp(T.categoria, categorias[6])) { //verifica se o número é caracter (char)
+        resultado = 2;
+      }*/
       T = analex(FD);
     }
   }
 
-
   else if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par")) {
     T = analex(FD);
-    Expressao();
+    resultado = Expressao();
     if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_par")){
       T = analex(FD);
     }
@@ -252,7 +336,7 @@ void prog() {
           strcpy(pilhaSimbolos[topoSimbolos].categoria, "param");
           pilhaSimbolos[topoSimbolos].escopo = local;
           pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-          pilhaSimbolos[topoSimbolos].codigo = qtd_ID++; //armazena o codigo do simbolo associando a quantidade de identificadores. Depois incrementa o contador
+          pilhaSimbolos[topoSimbolos].endereco = qtd_ID++; //armazena a posição do simbolo associando a quantidade de identificadores. Depois incrementa o contador
         }
         if (!strcmp(T.categoria, "ID")) {
           if (!ehprototipo) {
@@ -361,7 +445,6 @@ void prog() {
   }
 
 }
-
 // Função que realiza os comandos da linguagem
 void cmd() {
   if (!strcmp(T.categoria, "PR") || !strcmp(T.categoria, "ID") || !strcmp(T.categoria, "SN")) {

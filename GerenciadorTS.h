@@ -6,7 +6,7 @@ typedef struct simbolos {
   char nome[30], tipo[30], categoria[30];
   Escopo escopo;
   int ehZumbi;
-  int codigo;
+  int endereco;
   float valor;
 } simbolo;
 
