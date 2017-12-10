@@ -14,5 +14,5 @@ void cmd();
 void atrib();
 void op_rel();
 void apagaSimbolos();
-int existeID(token, Escopo);
+
 #endif

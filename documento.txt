@@ -1,7 +1,8 @@
 inteiro a,d;
 caracter pera;
+
 prototipo inteiro coe(semparam);
-prototipo inteiro coe(semparam);
+
 inteiro barril(inteiro queijo, inteiro presunto) {
    queijo = 5;
 }
@@ -17,10 +18,13 @@ inteiro soma(inteiro b) {
     retorne a;
 }
 
-inteiro umaFuncao(semparam) {
-   inteiro c;
+inteiro coe(inteiro vish) {
+  retorne 1+2;
+}
+
+inteiro umaFuncao(inteiro b) {
+   inteiro soma;
    inteiro a;
    inteiro g;
-   inteiro b;
 
 }

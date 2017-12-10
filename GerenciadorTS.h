@@ -13,4 +13,7 @@ typedef struct simbolos {
 simbolo pilhaSimbolos[100];
 int topoSimbolos = 0;
 
+void apagaSimbolos();
+int existeID(token, Escopo);
+
 #endif

@@ -3,4 +3,6 @@
 
 char tipoFunc[20];
 
+void retornoDaFuncao(char *, float);
+
 #endif

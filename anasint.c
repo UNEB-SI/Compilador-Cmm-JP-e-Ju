@@ -255,13 +255,12 @@ void prog() {
   int ehfuncao = 0; // Verifica se a função possui corpo ou não.
   int semparam = 0;
   char tipoAux[30]; // variável auxiliar para armazenar o tipo da variável ou função
-  //printf("Token: %s\n", T.lexema);
 
   //Verifica se o token atual é um protótipo de função
   if (!strcmp(T.categoria, "PR") && !strcmp(T.lexema, "prototipo")) {
     T = analex(FD);
     ehprototipo = 1;
-    //printf("Token: %s\n", T.lexema);
+    strcpy(pilhaSimbolos[topoSimbolos].categoria, "prototipo");
   }
   //Analisa o token atual e verifica se é um tipo válido para declaração de uma variável ou função
   if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter"))
@@ -270,8 +269,7 @@ void prog() {
                                  ||  !strcmp(T.lexema, "booleano")
                                  ||  !strcmp(T.lexema, "semretorno"))
   {
-    if (!ehprototipo)
-      strcpy(tipoAux, T.lexema); //Armazena o token na variavel auxiliar para guardar os tipos dos identificadores na pilha
+    strcpy(tipoAux, T.lexema); //Armazena o token na variavel auxiliar para guardar os tipos dos identificadores na pilha
   }
   else {
     erro(14);
@@ -279,45 +277,70 @@ void prog() {
 
   do { //Fará a leitura e armazenamento dos identificadores para a pilha de simbolos
     T = analex(FD);
-    //printf("Token: %s\n", T.lexema);
     //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
     if (!strcmp(T.categoria, "ID") || !strcmp(T.lexema, "principal")) {
-      if (!ehprototipo) {
-        if (!existeID(T, global)) {
-          strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
-          strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
-          strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
-          pilhaSimbolos[topoSimbolos].escopo = global;
-          pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-          topoSimbolos++;
-        }
-        else erro(19);
+      if (!existeID(T, global)) { //se o ID não existir na pilha, este poderá ser salvo
+        strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
+        strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
+        strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
+        pilhaSimbolos[topoSimbolos].escopo = global;
+        pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+        topoSimbolos++;
+        T = analex(FD);
       }
-      T = analex(FD);
-      //printf("Token: %s\n", T.lexema);
+      else { //se o nome do ID já existe na pilha
+        if (!ehprototipo) { //verifica se não é protótipo
+          char nomeID[30]; //variável auxiliar para armazenar o nome do ID
+          strcpy(nomeID, T.lexema);
+          T = analex(FD); //chama o próximo token
+
+          if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par")) {
+            int i=0;
+            while (i < topoSimbolos) { //continuará procurando por outros identificadores de mesmo nome
+              if (!strcmp(nomeID, pilhaSimbolos[i].nome)) //verifica se o nome do ID já existe na pilha
+                if (!strcmp(pilhaSimbolos[i].categoria, "funcao")) //se for uma função já existente, o novo ID não será salvo
+                  erro(19); //Emite um erro indicando que o nome do ID não pode ser armazenado
+              i++;
+            }
+            if (i == topoSimbolos) { //Ao chegar no topo da pilha, o novo ID poderá ser armazenado nela
+              strcpy(pilhaSimbolos[topoSimbolos].nome, nomeID);
+              strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
+              strcpy(pilhaSimbolos[topoSimbolos].categoria, "funcao");
+              pilhaSimbolos[topoSimbolos].escopo = global;
+              pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+              topoSimbolos++;
+            }
+          }
+          else if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) /*Caso o token atual
+          seja o sinal de ponto e virgula, trata-se de uma variável global e portanto o novo ID não poderá ser
+          salvo na pilha*/
+            erro(19);
+        }
+        else
+          erro(19);
+      }
     }
     else
       erro(6);
 
     if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par")) {
+      int x = --topoSimbolos;
       if (!ehprototipo) {
-        int x = --topoSimbolos;
         strcpy(pilhaSimbolos[x].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
-        topoSimbolos++;
         ehfuncao = 1;
-        strcpy(tipoFunc, pilhaSimbolos[x].tipo); //Armazena o tipo da função
       }
+      else
+        strcpy(pilhaSimbolos[x].categoria, "prototipo");
+      topoSimbolos++;
+      strcpy(tipoFunc, pilhaSimbolos[x].tipo); //Armazena o tipo da função
 
       do { //armazena os paramentros na pilha de sinais
         T = analex(FD);
-        //printf("Token: %s\n", T.lexema);
         if (!strcmp(T.categoria, "PR") && !strcmp(T.lexema, "semparam")) { // Verifica se a função não possui parâmetros
           T = analex(FD);
           semparam = 1;
-          //printf("Token: %s\n", T.lexema);
           if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_par")) {
             T = analex(FD);
-            //printf("Token: %s\n", T.lexema);
             break; // Constata que a função não possui parâmetros e termina a declaração
           }
           else {
@@ -329,27 +352,26 @@ void prog() {
                                             ||  !strcmp(T.lexema, "real")
                                             ||  !strcmp(T.lexema, "booleano"))
         {
-          if (!ehprototipo)
-            strcpy(pilhaSimbolos[topoSimbolos].tipo, T.lexema);
+          strcpy(pilhaSimbolos[topoSimbolos].tipo, T.lexema);
           T = analex(FD);
-          //printf("Token: %s\n", T.lexema);
         }
         else {
           erro(12);
         }
-        if (!ehprototipo) {
-          strcpy(pilhaSimbolos[topoSimbolos].categoria, "param");
-          pilhaSimbolos[topoSimbolos].escopo = local;
-          pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-          pilhaSimbolos[topoSimbolos].endereco = qtd_ID++; //armazena a posição do simbolo associando a quantidade de identificadores. Depois incrementa o contador
-        }
+        strcpy(pilhaSimbolos[topoSimbolos].categoria, "param");
+        pilhaSimbolos[topoSimbolos].escopo = local;
+        pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+        pilhaSimbolos[topoSimbolos].endereco = qtd_ID++; //armazena a posição do simbolo associando a quantidade de identificadores. Depois incrementa o contador
+
         if (!strcmp(T.categoria, "ID")) {
           if (!ehprototipo) {
-            strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
-            topoSimbolos++;
+            if (!existeID(T, local)) {
+              strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
+              topoSimbolos++;
+            }
+            else erro(19);
           }
           T = analex(FD);
-          //printf("Token: %s\n", T.lexema);
         }
         else if (!ehprototipo && !(!strcmp(T.categoria, "ID"))) {
           // Significa dizer que a função terá corpo, logo, deverá ter os nomes dos parâmetros especificados
@@ -369,13 +391,11 @@ void prog() {
     }
     if ((ehfuncao || ehprototipo) && !semparam) { //Analex danadinho
       T = analex(FD);
-      //printf("Token: %s\n", T.lexema);
     }
   } while(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "virgula"));
 
   if (!ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
     T = analex(FD);
-    //printf("Token: %s\n", T.lexema);
   }
   else if (!ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
     if (!strcmp(T.categoria, "FIM_ARQUIVO") && !strcmp(T.lexema, "EOF"))
@@ -388,7 +408,6 @@ void prog() {
   }
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
 
-    //printf("Token: riaria %s\n", T.lexema);
     T = analex(FD);
 
     while (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves"))) {
@@ -401,10 +420,8 @@ void prog() {
         strcpy(tipoAux, T.lexema);
         do { //Fará a leitura e armazenamento das variáveis para a pilha de simbolos
           T = analex(FD);
-          //printf("Token: %s\n", T.lexema);
           //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
           if (!strcmp(T.categoria, "ID")) {
-            //printf("ENTREI\n");
             if (!existeID(T, local)) {
               strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
               strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
@@ -415,7 +432,6 @@ void prog() {
             }
             else erro(19);
             T = analex(FD);
-            //printf("Token: %s\n", T.lexema);
           }
           else
             erro(6);
@@ -423,25 +439,17 @@ void prog() {
 
         if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
           T = analex(FD);
-          //printf("Token: %s\n", T.lexema);
         }
         else if (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
           erro(8);
         }
-
       }
-
-      /*else if (!strcmp(T.categoria, "ID")) {
-        cmd();
-        // TALVEZ SEJA NECESSÁRIO UM analex(FD) AQUI. VAI DEPENDER DE COMO TERMINA A FUNÇÃO cmd()
-      }*/
 
       else if (!strcmp(T.lexema, "EOF"))
         erro(10);
 
       else {
         cmd(); //chama o próximo token
-        //printf("Token: %s\n", T.lexema);
       }
 
     }
@@ -449,7 +457,6 @@ void prog() {
   if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
     T = analex(FD);
     apagaSimbolos();
-    //printf("Token: %s\n", T.lexema);
   }
 
 }
@@ -626,42 +633,4 @@ void op_rel(){
       T = analex(FD);
     }
   }
-}
-
-//Função que confere se um identificador existe ou não. 1 se Sim, 0 se Não.
-int existeID(token TOKEN, Escopo escopo) {
-  int i=0;
-  while (i < topoSimbolos) {
-    if (!strcmp(TOKEN.lexema, pilhaSimbolos[i].nome))
-      break;
-    i++;
-  }
-
-  if (i != topoSimbolos) {
-    if (escopo == global && pilhaSimbolos[i].escopo != global)
-      return 0; //o identificador "não existe" dentro de seu escopo
-
-    else if (escopo == local && pilhaSimbolos[i].escopo != local) {
-      i++;
-      while (i < topoSimbolos) {
-        if (!strcmp(TOKEN.lexema, pilhaSimbolos[i].nome))
-          break;
-        i++;
-      }
-      if (i == topoSimbolos)
-        return 0;
-      else
-        return 1;
-    }
-
-    else if (escopo == local && pilhaSimbolos[i].escopo == local) {
-      if (!pilhaSimbolos[i].ehZumbi)
-        return 1;
-    }
-
-    else
-      return 1; //o identificador já foi declarado antes.
-  }
-
-  return 0; //o identificador não existe, portanto, pode ser salvo na Pilha de Símbolos
 }
