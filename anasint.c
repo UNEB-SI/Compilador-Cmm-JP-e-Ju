@@ -283,12 +283,15 @@ void prog() {
     //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
     if (!strcmp(T.categoria, "ID") || !strcmp(T.lexema, "principal")) {
       if (!ehprototipo) {
-        strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
-        strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
-        strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
-        pilhaSimbolos[topoSimbolos].escopo = global;
-        pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-        topoSimbolos++;
+        if (!existeID(T, global)) {
+          strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
+          strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
+          strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
+          pilhaSimbolos[topoSimbolos].escopo = global;
+          pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+          topoSimbolos++;
+        }
+        else erro(19);
       }
       T = analex(FD);
       //printf("Token: %s\n", T.lexema);
@@ -400,12 +403,15 @@ void prog() {
           //Verifica se o token atual é um identificador. Se for, armazena-o na pilha de simbolos e lê-se o próximo token.
           if (!strcmp(T.categoria, "ID")) {
             //printf("ENTREI\n");
-            strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
-            strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
-            strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
-            pilhaSimbolos[topoSimbolos].escopo = local;
-            pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-            topoSimbolos++;
+            if (!existeID(T, local)) {
+              strcpy(pilhaSimbolos[topoSimbolos].nome, T.lexema);
+              strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
+              strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
+              pilhaSimbolos[topoSimbolos].escopo = local;
+              pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+              topoSimbolos++;
+            }
+            else erro(19);
             T = analex(FD);
             //printf("Token: %s\n", T.lexema);
           }
@@ -615,4 +621,42 @@ void op_rel(){
       T = analex(FD);
     }
   }
+}
+
+//Função que confere se um identificador existe ou não. 1 se Sim, 0 se Não.
+int existeID(token TOKEN, Escopo escopo) {
+  int i=0;
+  while (i < topoSimbolos) {
+    if (!strcmp(TOKEN.lexema, pilhaSimbolos[i].nome))
+      break;
+    i++;
+  }
+
+  if (i != topoSimbolos) {
+    if (escopo == global && pilhaSimbolos[i].escopo != global)
+      return 0; //o identificador "não existe" dentro de seu escopo
+
+    else if (escopo == local && pilhaSimbolos[i].escopo != local) {
+      i++;
+      while (i < topoSimbolos) {
+        if (!strcmp(TOKEN.lexema, pilhaSimbolos[i].nome))
+          break;
+        i++;
+      }
+      if (i == topoSimbolos)
+        return 0;
+      else
+        return 1;
+    }
+
+    else if (escopo == local && pilhaSimbolos[i].escopo == local) {
+      if (!pilhaSimbolos[i].ehZumbi)
+        return 1;
+    }
+    
+    else
+      return 1; //o identificador já foi declarado antes.
+  }
+
+  return 0; //o identificador não existe, portanto, pode ser salvo na Pilha de Símbolos
 }

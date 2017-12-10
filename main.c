@@ -22,12 +22,17 @@ int main() {
     prog();
 
     //printf("< %s, %s >\n", T.categoria, T.lexema);
-    
+
     if (strcmp(T.categoria, "FIM_ARQUIVO") == 0)
       break;
   }
 
   printf("\nAnálise Sintática efetuada com Sucesso!\n");
+
+  printf("\nPilha de Simbolos (Deve ficar apenas identificadores globais):\n");
+  for (i=0; i<topoSimbolos; i++) {
+    printf("Nome: %s - Catg: %s - Escp: %d - ehZumbi: %d\n", pilhaSimbolos[i].nome, pilhaSimbolos[i].categoria, pilhaSimbolos[i].escopo, pilhaSimbolos[i].ehZumbi);
+  }
 
   fclose(FD);
   return 0;

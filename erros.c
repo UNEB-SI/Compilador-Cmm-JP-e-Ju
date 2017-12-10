@@ -20,10 +20,11 @@ char erros[][100] =  {"Sem erro", //0
                      "Identificador não declarado!", //15
                      "Tipo do Identificador não compatível com a expressão!", //16
                      "Conflito entre tipos dos identificadores", //17
-                     "Tipo do Parâmetro não compatível com a expressão da função!" //18
+                     "Tipo do Parâmetro não compatível com a expressão da função!", //18
+                     "Este nome de Identificador já foi declarado antes!" //19
                    };
 
 void erro(int e) {
-    printf("\nErro Sintático: %s\nErro na Linha: %d\n", erros[e], qtd_linhas-1);
+    printf("\nErro Sintático: %s\nErro na Linha: %d\n", erros[e], qtd_linhas);
     exit(e);
 }

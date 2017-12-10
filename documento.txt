@@ -2,15 +2,22 @@ inteiro a,d;
 caracter pera;
 prototipo inteiro coe(semparam);
 prototipo inteiro coe(semparam);
-
 inteiro barril(inteiro queijo, inteiro presunto) {
    queijo = 5;
 }
 
 inteiro soma(inteiro b) {
+    inteiro a;
     inteiro g;
     g=10;
     a = 20;
-    b = 8.12345/2.23456+3.34567;    
+    b = 8.12345/2.23456+3.34567;
     a = 5 - 3 * barril(g, b) + a/2;
+}
+
+inteiro umaFuncao(semparam) {
+   inteiro c;
+   inteiro a;
+   inteiro g;
+   inteiro b;
 }
