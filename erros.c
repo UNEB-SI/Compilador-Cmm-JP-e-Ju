@@ -21,7 +21,8 @@ char erros[][100] =  {"Sem erro", //0
                      "Tipo do Identificador não compatível com a expressão!", //16
                      "Conflito entre tipos dos identificadores", //17
                      "Tipo do Parâmetro não compatível com a expressão da função!", //18
-                     "Este nome de Identificador já foi declarado antes!" //19
+                     "Este nome de Identificador já foi declarado antes!", //19
+                     "Retorno da função não corresponde com o tipo da função." //20
                    };
 
 void erro(int e) {

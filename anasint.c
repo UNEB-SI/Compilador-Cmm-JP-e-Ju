@@ -3,8 +3,8 @@
 #include <string.h>
 #include "analex.c"
 #include "anasint.h"
+#include "anasem.c"
 #include "GerenciadorTS.c"
-#include "erros.c"
 #include <unistd.h>
 
 
@@ -301,9 +301,11 @@ void prog() {
 
     if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par")) {
       if (!ehprototipo) {
-        strcpy(pilhaSimbolos[--topoSimbolos].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
+        int x = --topoSimbolos;
+        strcpy(pilhaSimbolos[x].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
         topoSimbolos++;
         ehfuncao = 1;
+        strcpy(tipoFunc, pilhaSimbolos[x].tipo); //Armazena o tipo da função
       }
 
       do { //armazena os paramentros na pilha de sinais
@@ -518,7 +520,10 @@ void cmd() {
 
       if(!strcmp(T.lexema, "retorne")){
         T = analex(FD);
-        Expressao();
+        float retornoFuncao = Expressao();
+        //printf("TIPO: %s e EXPR: %f\n", tipoFunc, retornoFuncao);
+        retornoDaFuncao(tipoFunc, retornoFuncao);
+
         if(!strcmp(T.sinal, "ponto_virgula"))
         T = analex(FD);
         else {
@@ -653,7 +658,7 @@ int existeID(token TOKEN, Escopo escopo) {
       if (!pilhaSimbolos[i].ehZumbi)
         return 1;
     }
-    
+
     else
       return 1; //o identificador já foi declarado antes.
   }

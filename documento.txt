@@ -8,11 +8,13 @@ inteiro barril(inteiro queijo, inteiro presunto) {
 
 inteiro soma(inteiro b) {
     inteiro a;
-    inteiro g;
-    g=10;
+    real g;
+    g=10.5;
     a = 20;
     b = 8.12345/2.23456+3.34567;
-    a = 5 - 3 * barril(g, b) + a/2;
+    a = 5 - 3 * barril(a, b) + a/2;
+
+    retorne a;
 }
 
 inteiro umaFuncao(semparam) {
@@ -20,4 +22,5 @@ inteiro umaFuncao(semparam) {
    inteiro a;
    inteiro g;
    inteiro b;
+
 }
