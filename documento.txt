@@ -1,30 +1,9 @@
-inteiro a,d;
-caracter pera;
-
-prototipo inteiro coe(semparam);
-
-inteiro barril(inteiro queijo, inteiro presunto) {
-   queijo = 5;
-}
-
-inteiro soma(inteiro b) {
-    inteiro a;
-    real g;
-    g=10.5;
-    a = 20;
-    b = 8.12345/2.23456+3.34567;
-    a = 5 - 3 * barril(a, b) + a/2;
-
-    retorne a;
-}
-
-inteiro coe(inteiro vish) {
-  retorne 1+2;
-}
-
-inteiro umaFuncao(inteiro b) {
-   inteiro soma;
-   inteiro a;
-   inteiro g;
-
+prototipo inteiro barril(real eNois, inteiro naFita);
+inteiro barril(real b, inteiro p) {
+  inteiro a;
+  real c;
+  a = 20/2+3*8;
+  /*c = 25.3 + 2.1;*/
+  /*rirariariaria fdsj*/
+  retorne a;
 }

@@ -19,10 +19,13 @@ char erros[][100] =  {"Sem erro", //0
                      "Tipo de identificador não especificado!", //14
                      "Identificador não declarado!", //15
                      "Tipo do Identificador não compatível com a expressão!", //16
-                     "Conflito entre tipos dos identificadores", //17
+                     "Conflito entre tipos dos identificadores!", //17
                      "Tipo do Parâmetro não compatível com a expressão da função!", //18
                      "Este nome de Identificador já foi declarado antes!", //19
-                     "Retorno da função não corresponde com o tipo da função." //20
+                     "Retorno da função não corresponde com o tipo da função!", //20
+                     "Parâmetro na declaração de função não corresponde ao de seu protótipo!", //21
+                     "Faltando parâmetro(s) na declaração da função de acordo com seu protótipo!", //22
+                     "Excesso de parâmetros na declaração da função de acordo com seu protótipo!" //23
                    };
 
 void erro(int e) {

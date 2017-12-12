@@ -68,6 +68,9 @@ void transicao_sinais(int *estado, char *lexema, int *l, char c, FILE *FD) {
       lexema[*l] = c;
       *l = *l + 1;
       break;
+    case 31:
+      *estado = 32;
+      break;
     case 33:
       *estado = 33;
       break;
@@ -83,8 +86,10 @@ token analex(FILE *FD) {
   int estado = 0, l = 0, d = 0, i = 0;
   char c, lexema[QTD_LEXEMA], digito[QTD_DIGITO];
 
-  if(strcmp(T.lexema, ""))
+  if(strcmp(T.lexema, "")) {
     printf("< %s %s >\n", T.categoria, T.lexema);
+  }
+
   //loop principal
   while(1) {
     c = fgetc(FD); //Lê um caractere
@@ -220,6 +225,9 @@ token analex(FILE *FD) {
           estado = 29;
           lexema[l++] = c;
           break;
+        case 31:
+          estado = 32;
+          break;
         case 33:
           estado = 33;
           break;
@@ -271,6 +279,9 @@ token analex(FILE *FD) {
         case 29:
           estado = 29;
           lexema[l++] = c;
+          break;
+        case 31:
+          estado = 32;
           break;
         case 33:
           estado = 33;
@@ -350,10 +361,8 @@ token analex(FILE *FD) {
         break;
 
         case '/':
-        if (!estado){
-          T = copiaTokenSinal("/");
+        if (!estado) {
           estado = 31;
-          return T;
         }
         else if (estado == 34)
           estado = 0;
