@@ -369,7 +369,6 @@ void prog() {
           pilhaSimbolos[topoSimbolos].ehZumbi = 0;
         else
           pilhaSimbolos[topoSimbolos].ehZumbi = 1; //se for protótipo, o parâmetro já se torna zumbi
-        //pilhaSimbolos[topoSimbolos].endereco = topoSimbolos; //armazena a posição do simbolo associando a quantidade de identificadores. Depois incrementa o contador
 
         if (!strcmp(T.categoria, "ID")) {
           if (!ehprototipo) {
@@ -408,37 +407,43 @@ void prog() {
   if (!ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
     T = analex(FD);
   }
+
   else if (!ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
     if (!strcmp(T.categoria, "FIM_ARQUIVO") && !strcmp(T.lexema, "EOF"))
       erro(0);
     erro(8);
   }
+
   else if (ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves"))) {
     erro(9);
   }
+
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
-    int i=topoSimbolos-1, j=0, flag=1, posFunc=topoSimbolos, qtdParams=0;
+    int i=topoSimbolos-1, j=0, naoEhFuncao=1, posFunc=topoSimbolos, qtdParams=0;
+
     /*Confere se os tipos dos parâmetros da declaração da função são compatíveis com os parâmetros de seu
     protótipo, caso este existir*/
-    while (flag) {
+    while (naoEhFuncao) {
       if (!strcmp(pilhaSimbolos[i].categoria, "funcao")) { //encontra a última função declarada
-        flag = 0;
-        posFunc = i;
+        naoEhFuncao = 0;
+        posFunc = i; // Armazena na variável auxiliar a posição onde se encontra a função
         while (j < i) { //procura o protótipo desta função
           if (!strcmp(pilhaSimbolos[j].nome, pilhaSimbolos[i].nome))
             if (!strcmp(pilhaSimbolos[j].categoria, "prototipo")) {
+              if (!(!strcmp(pilhaSimbolos[j].tipo, pilhaSimbolos[i].tipo)))
+                erro(21); //Tipo do retorno na declaração da função é diferente do tipo de retorno de seu protótipo
               j++;
               while (!strcmp(pilhaSimbolos[j].categoria, "param")) { //averigua os parâmetros do protótipo
                 if (!strcmp(pilhaSimbolos[++i].categoria, "param")) { //compara com os parâmetros da declaração da função
                   if (!(!strcmp(pilhaSimbolos[j].tipo, pilhaSimbolos[i].tipo)))
-                    erro(21); //Se os tipos não forem compatíveis, emite-se um erro
+                    erro(22); //Se os tipos não forem compatíveis, emite-se um erro
                 }
                 else
-                  erro(22); //Emite erro se faltar um parâmetro na declaração da função
+                  erro(23); //Emite erro se faltar um parâmetro na declaração da função
                 j++;
               }
               if (!strcmp(pilhaSimbolos[++i].categoria, "param"))
-                erro(23); //Emite erro se tiver parâmetro a mais na declaração da função
+                erro(24); //Emite erro se tiver parâmetro a mais na declaração da função
             }
           j++; //continua procurando pelo protótipo
         }
@@ -449,7 +454,8 @@ void prog() {
       }
     } // Se o protótipo não for encontrado, o fluxo continua normalmente.
 
-    while (++posFunc < topoSimbolos) //Adiciona o endereço dos parâmetros da última função declarada
+    //Adiciona o endereço dos parâmetros da última função declarada
+    while (++posFunc < topoSimbolos)
       if (!strcmp(pilhaSimbolos[posFunc].categoria, "param"))
         pilhaSimbolos[posFunc].endereco = posRelLocal - qtdParams--;
 

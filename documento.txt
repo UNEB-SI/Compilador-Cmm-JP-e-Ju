@@ -12,3 +12,6 @@ inteiro coee(semparam) {
   inteiro a;
   retorne b;
 }
+semretorno mermao(semparam) {
+  retorne 1+2;
+}
