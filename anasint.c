@@ -128,7 +128,8 @@ float Fator() {
       int i=0, j;
       while (i < topoSimbolos) { // Busca encontrar o identificador na pilha de Símbolos
         if (!strcmp(T.lexema, pilhaSimbolos[i].nome))
-          break; //Encontra o identificador na pilha e sai do laço
+          if (!pilhaSimbolos[i].ehZumbi)
+            break; //Encontra o identificador na pilha e sai do laço
         i++;
       }
       if (i == topoSimbolos)
@@ -184,14 +185,14 @@ float Fator() {
             resultado = 1;
           else
             erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
-          printf("LOAD %d\n", pilhaSimbolos[i].endereco);
+          printf("LOAD %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
           T = analex(FD);
         }
         else {
           erro(3);
         }
       }
-      else if (!strcmp(pilhaSimbolos[i].categoria, "variavel")) {
+      else if (!strcmp(pilhaSimbolos[i].categoria, "variavel") || !strcmp(pilhaSimbolos[i].categoria, "param")) {
         if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[1])) //verifica se o número é do tipo inteiro ou char
           resultado = 0;
         else if (!strcmp(pilhaSimbolos[i].tipo, PR[3])) //verifica se o número é do tipo real
@@ -201,7 +202,7 @@ float Fator() {
         }*/
         else
           erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
-        printf("LOAD %d\n", pilhaSimbolos[i].endereco);
+        printf("LOAD %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
       }
     }
     else { // Obtenção de valores para cálculos de expressões aritméticas
@@ -255,6 +256,7 @@ void prog() {
   int ehfuncao = 0; // Verifica se a função possui corpo ou não.
   int semparam = 0;
   char tipoAux[30]; // variável auxiliar para armazenar o tipo da variável ou função
+  static int posRelGlobal = 0, posRelLocal = 0; //Armazena a posição relativa das variáveis globais e locais no código cmm
 
   //Verifica se o token atual é um protótipo de função
   if (!strcmp(T.categoria, "PR") && !strcmp(T.lexema, "prototipo")) {
@@ -284,6 +286,8 @@ void prog() {
         strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
         strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
         pilhaSimbolos[topoSimbolos].escopo = global;
+        if (!ehprototipo)
+          pilhaSimbolos[topoSimbolos].endereco = posRelGlobal++;
         pilhaSimbolos[topoSimbolos].ehZumbi = 0;
         topoSimbolos++;
         T = analex(FD);
@@ -307,6 +311,7 @@ void prog() {
               strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
               strcpy(pilhaSimbolos[topoSimbolos].categoria, "funcao");
               pilhaSimbolos[topoSimbolos].escopo = global;
+              pilhaSimbolos[topoSimbolos].endereco = posRelGlobal++;
               pilhaSimbolos[topoSimbolos].ehZumbi = 0;
               topoSimbolos++;
             }
@@ -364,7 +369,7 @@ void prog() {
           pilhaSimbolos[topoSimbolos].ehZumbi = 0;
         else
           pilhaSimbolos[topoSimbolos].ehZumbi = 1; //se for protótipo, o parâmetro já se torna zumbi
-        pilhaSimbolos[topoSimbolos].endereco = qtd_ID++; //armazena a posição do simbolo associando a quantidade de identificadores. Depois incrementa o contador
+        //pilhaSimbolos[topoSimbolos].endereco = topoSimbolos; //armazena a posição do simbolo associando a quantidade de identificadores. Depois incrementa o contador
 
         if (!strcmp(T.categoria, "ID")) {
           if (!ehprototipo) {
@@ -412,11 +417,13 @@ void prog() {
     erro(9);
   }
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
-    int i=topoSimbolos-1, j=0;
+    int i=topoSimbolos-1, j=0, flag=1, posFunc=topoSimbolos, qtdParams=0;
     /*Confere se os tipos dos parâmetros da declaração da função são compatíveis com os parâmetros de seu
     protótipo, caso este existir*/
-    while (i > 0) {
+    while (flag) {
       if (!strcmp(pilhaSimbolos[i].categoria, "funcao")) { //encontra a última função declarada
+        flag = 0;
+        posFunc = i;
         while (j < i) { //procura o protótipo desta função
           if (!strcmp(pilhaSimbolos[j].nome, pilhaSimbolos[i].nome))
             if (!strcmp(pilhaSimbolos[j].categoria, "prototipo")) {
@@ -436,8 +443,15 @@ void prog() {
           j++; //continua procurando pelo protótipo
         }
       }
-      i--; //continua procurando a declaração da última função, ignorando os parâmetros desta na pilha de Símbolos
+      else {
+        qtdParams++;
+        i--; //continua procurando a declaração da última função, ignorando os parâmetros desta na pilha de Símbolos
+      }
     } // Se o protótipo não for encontrado, o fluxo continua normalmente.
+
+    while (++posFunc < topoSimbolos) //Adiciona o endereço dos parâmetros da última função declarada
+      if (!strcmp(pilhaSimbolos[posFunc].categoria, "param"))
+        pilhaSimbolos[posFunc].endereco = posRelLocal - qtdParams--;
 
     T = analex(FD);
 
@@ -458,6 +472,7 @@ void prog() {
               strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
               strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
               pilhaSimbolos[topoSimbolos].escopo = local;
+              pilhaSimbolos[topoSimbolos].endereco = posRelLocal++;
               pilhaSimbolos[topoSimbolos].ehZumbi = 0;
               topoSimbolos++;
             }
@@ -487,6 +502,7 @@ void prog() {
   }
   if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
     T = analex(FD);
+    posRelLocal = 0;
     apagaSimbolos();
   }
 

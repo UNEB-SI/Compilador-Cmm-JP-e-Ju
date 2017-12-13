@@ -31,7 +31,7 @@ int main() {
 
   printf("\nPilha de Simbolos (Deve ficar apenas identificadores globais):\n");
   for (i=0; i<topoSimbolos; i++) {
-    printf("Nome: %s - Catg: %s - Tipo %s - Escp: %d - ehZumbi: %d\n", pilhaSimbolos[i].nome, pilhaSimbolos[i].categoria, pilhaSimbolos[i].tipo, pilhaSimbolos[i].escopo, pilhaSimbolos[i].ehZumbi);
+    printf("Nome: %s - Catg: %s - Tipo: %s - Escp: %d - Endr: %d - ehZumbi: %d\n", pilhaSimbolos[i].nome, pilhaSimbolos[i].categoria, pilhaSimbolos[i].tipo, pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco, pilhaSimbolos[i].ehZumbi);
   }
 
   printf("\nPilha de identificadores: (Pertencente ao Analex. Cogita-se retirar essa pilha)\n");

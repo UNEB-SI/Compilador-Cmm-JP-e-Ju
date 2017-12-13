@@ -1,9 +1,14 @@
+inteiro vish, hdhm, aham;
 prototipo inteiro barril(real eNois, inteiro naFita);
 inteiro barril(real b, inteiro p) {
   inteiro a;
-  real c;
-  a = 20/2+3*8;
+  inteiro c;
+  a = c/2+3*aham;
   /*c = 25.3 + 2.1;*/
   /*rirariariaria fdsj*/
-  retorne a;
+}
+inteiro coee(semparam) {
+  inteiro b;
+  inteiro a;
+  retorne b;
 }
