@@ -1,20 +1,20 @@
 inteiro vish, hdhm, aham;
-booleano flag;
+real  te;
 prototipo inteiro barril(real eNois, inteiro naFita);
 inteiro barril(real b, inteiro p) {
   inteiro a;
   inteiro c;
-  a = (1 || 1) && 0;
+  a = c/2+3*aham;
   /*c = 25.3 + 2.1;*/
   /*rirariariaria fdsj*/
+  retorne a;
 }
+
 inteiro coee(semparam) {
   inteiro b;
   inteiro a;
-  booleano janta;
-  a = 1 + janta;
-  retorne flag;
+  retorne a;
 }
-inteiro mermao(semparam) {
-  retorne coee();
+semretorno mermao(semparam) {
+  
 }

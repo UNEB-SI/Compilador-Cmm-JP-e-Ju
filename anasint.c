@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 
+float retornoFuncao;
 // INICIO DOS PROCEDIMENTOS DE ANÁLISE DE EXPRESSÕES ARITMÉTICAS
 
 //Função OK
@@ -288,11 +289,11 @@ void prog() {
     strcpy(pilhaSimbolos[topoSimbolos].categoria, "prototipo");
   }
   //Analisa o token atual e verifica se é um tipo válido para declaração de uma variável ou função
-  if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter"))
+  if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter")
                                  ||  !strcmp(T.lexema, "inteiro")
                                  ||  !strcmp(T.lexema, "real")
                                  ||  !strcmp(T.lexema, "booleano")
-                                 ||  !strcmp(T.lexema, "semretorno"))
+                                 ||  !strcmp(T.lexema, "semretorno")))
   {
     strcpy(tipoAux, T.lexema); //Armazena o token na variavel auxiliar para guardar os tipos dos identificadores na pilha
   }
@@ -356,6 +357,7 @@ void prog() {
       if (!ehprototipo) {
         strcpy(pilhaSimbolos[x].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
         ehfuncao = 1;
+        temRetorno = 0;
       }
       else
         strcpy(pilhaSimbolos[x].categoria, "prototipo");
@@ -375,10 +377,10 @@ void prog() {
             erro(11);
           }
         }
-        else if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter"))
+        else if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter")
                                             ||  !strcmp(T.lexema, "inteiro")
                                             ||  !strcmp(T.lexema, "real")
-                                            ||  !strcmp(T.lexema, "booleano"))
+                                            ||  !strcmp(T.lexema, "booleano")))
         {
           strcpy(pilhaSimbolos[topoSimbolos].tipo, T.lexema);
           T = analex(FD);
@@ -487,10 +489,10 @@ void prog() {
     T = analex(FD);
 
     while (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves"))) {
-      if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter"))
+      if (!strcmp(T.categoria, "PR") && (!strcmp(T.lexema, "caracter")
                                      ||  !strcmp(T.lexema, "inteiro")
                                      ||  !strcmp(T.lexema, "real")
-                                     ||  !strcmp(T.lexema, "booleano"))
+                                     ||  !strcmp(T.lexema, "booleano")))
       { //declaração de variáveis locais da função
 
         strcpy(tipoAux, T.lexema);
@@ -529,9 +531,17 @@ void prog() {
         cmd(); //chama o próximo token
       }
 
+
+
     }
   }
+
+  if(ehfuncao && strcmp(tipoFunc, "semretorno") && temRetorno==0){
+    erro(26);
+  }
+  
   if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
+
     T = analex(FD);
     posRelLocal = 0;
     apagaSimbolos();
@@ -618,8 +628,9 @@ void cmd() {
     else if (!strcmp(T.categoria, "PR")) {
 
       if(!strcmp(T.lexema, "retorne")){
+        temRetorno = 1;
         T = analex(FD);
-        float retornoFuncao = Expressao();
+        retornoFuncao = Expressao();
         //printf("TIPO: %s e EXPR: %f\n", tipoFunc, retornoFuncao);
         retornoDaFuncao(tipoFunc, retornoFuncao);
 

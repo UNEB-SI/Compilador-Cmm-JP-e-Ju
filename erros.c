@@ -26,7 +26,9 @@ char erros[][100] =  {"Sem erro", //0
                      "Tipo da declaração da função não corresponde com o tipo de seu protótipo!", //21
                      "Parâmetro na declaração de função não corresponde ao de seu protótipo!", //22
                      "Faltando parâmetro(s) na declaração da função de acordo com seu protótipo!", //23
-                     "Excesso de parâmetros na declaração da função de acordo com seu protótipo!" //24
+                     "Excesso de parâmetros na declaração da função de acordo com seu protótipo!", //24
+                     "Funções do tipo semretorno não devem retornar nenhum valor!", //25
+                     "Função sem retorno."//26
                    };
 
 void erro(int e) {

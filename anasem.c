@@ -4,7 +4,10 @@
 #include "erros.c"
 
 void retornoDaFuncao(char tipo[], float valor){
-  if ((!strcmp(tipo, "inteiro") && valor == 1.0) || (!strcmp(tipo, "real") && valor == 0.0)){
+
+  if ((!strcmp(tipo, "inteiro") && valor == 1.0) || (!strcmp(tipo, "real") && valor == 0.0))
     erro(20);
-  }
+
+  if (!strcmp(tipo, "semretorno") && temRetorno==1)
+    erro(25);
 }
