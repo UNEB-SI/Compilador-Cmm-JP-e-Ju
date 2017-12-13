@@ -30,7 +30,7 @@ float Expressao() {
   else
     resultado = primOp; /*Se não houver nenhum operador relacional pra comparar com outra expressão, o
                         resultado é o próprio valor da primeira operação*/
-  printf("----- EXPRESSAO %d: %.1f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
+  printf("----- EXPRESSAO %d: %.0f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
   return resultado;
 }
 
@@ -39,7 +39,7 @@ float expr_simp() {
   float primOp, resultado;
   primOp = resultado = 0;
 
-  if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "soma") || !strcmp(T.sinal, "substituicao"))) {
+  if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "soma") || !strcmp(T.sinal, "subtracao"))) {
     T  = analex(FD);
   }
 
@@ -68,6 +68,16 @@ float expr_simp() {
           printf("SUB\n");
         else if (resultado == 1)
           printf("SUBF\n");
+      }
+      //resultado = primOp - Termo();
+    }
+    else if (!strcmp(T.lexema, "||")) { // realiza a comparação dos operandos com "ou lógico"
+      T = analex(FD);
+      resultado = Termo();
+      if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
+        erro(17);
+      else {
+        printf("OR\n");
       }
       //resultado = primOp - Termo();
     }
@@ -107,6 +117,16 @@ float Termo() {
           printf("DIV\n");
         else if (resultado == 1)
           printf("DIVF\n");
+      }
+      //resultado = primOp / Termo();
+    }
+    else if (!strcmp(T.lexema, "&&")) { // realiza a comparação dos operandos com "e_logico"
+      T = analex(FD);
+      resultado = Termo();
+      if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
+        erro(17);
+      else {
+        printf("AND\n");
       }
       //resultado = primOp / Termo();
     }
@@ -193,7 +213,8 @@ float Fator() {
         }
       }
       else if (!strcmp(pilhaSimbolos[i].categoria, "variavel") || !strcmp(pilhaSimbolos[i].categoria, "param")) {
-        if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[1])) //verifica se o número é do tipo inteiro ou char
+        //verifica se o número é do tipo char, inteiro ou booleano
+        if (!strcmp(pilhaSimbolos[i].tipo, PR[1]) || !strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[4]))
           resultado = 0;
         else if (!strcmp(pilhaSimbolos[i].tipo, PR[3])) //verifica se o número é do tipo real
           resultado = 1;
@@ -232,8 +253,10 @@ float Fator() {
       erro(3);
     }
   }
+
   else if (!strcmp(T.sinal, "nao_logico")){
     T = analex(FD);
+    printf("NOT\n");
     Fator();
   }
 
@@ -457,7 +480,9 @@ void prog() {
     //Adiciona o endereço dos parâmetros da última função declarada
     while (++posFunc < topoSimbolos)
       if (!strcmp(pilhaSimbolos[posFunc].categoria, "param"))
-        pilhaSimbolos[posFunc].endereco = posRelLocal - qtdParams--;
+        pilhaSimbolos[posFunc].endereco = (posRelLocal-2) - qtdParams--; /* (posRelLocal-2) é devido aos dois registradores que estão
+                                                                           na janela de ativação antes da área destinada aos endereços
+                                                                           das variáveis locais */
 
     T = analex(FD);
 
@@ -513,6 +538,7 @@ void prog() {
   }
 
 }
+
 // Função que realiza os comandos da linguagem
 void cmd() {
   if (!strcmp(T.categoria, "PR") || !strcmp(T.categoria, "ID") || !strcmp(T.categoria, "SN")) {
