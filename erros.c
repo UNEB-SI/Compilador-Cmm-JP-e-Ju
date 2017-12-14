@@ -20,7 +20,7 @@ char erros[][100] =  {"Sem erro", //0
                      "Identificador não declarado!", //15
                      "Tipo do Identificador não compatível com a expressão!", //16
                      "Conflito entre tipos dos identificadores!", //17
-                     "Tipo do Parâmetro não compatível com a expressão da função!", //18
+                     "Tipo do Parâmetro não compatível com a declaração da função!", //18
                      "Este nome de Identificador já foi declarado antes!", //19
                      "Retorno da função não corresponde com o tipo da função!", //20
                      "Tipo da declaração da função não corresponde com o tipo de seu protótipo!", //21
@@ -31,7 +31,9 @@ char erros[][100] =  {"Sem erro", //0
                      "Função sem retorno!", //26
                      "Função com valor de retorno não deve ser tratado como comando!", //27
                      "A função Principal não deve ser declarada como variavel!", //28
-                     "A função Principal não deve ser declarada em escopo local!" //29
+                     "A função Principal não deve ser declarada em escopo local!", //29
+                     "Faltando parâmetro(s) na chamada da função de acordo com a declaração!", //30
+                     "Excesso de parâmetros na chamada da função de acordo com a declaração!" //31
                    };
 
 void erro(int e) {
