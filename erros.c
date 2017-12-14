@@ -28,10 +28,13 @@ char erros[][100] =  {"Sem erro", //0
                      "Faltando parâmetro(s) na declaração da função de acordo com seu protótipo!", //23
                      "Excesso de parâmetros na declaração da função de acordo com seu protótipo!", //24
                      "Funções do tipo semretorno não devem retornar nenhum valor!", //25
-                     "Função sem retorno."//26
+                     "Função sem retorno!", //26
+                     "Função com valor de retorno não deve ser tratado como comando!", //27
+                     "A função Principal não deve ser declarada como variavel!", //28
+                     "A função Principal não deve ser declarada em escopo local!" //29
                    };
 
 void erro(int e) {
-    printf("\nErro Sintático: %s\nErro na Linha: %d\n", erros[e], qtd_linhas);
+    printf("\nErro na Linha: %d\nMensagem: \"%s\"\n", qtd_linhas, erros[e]);
     exit(e);
 }

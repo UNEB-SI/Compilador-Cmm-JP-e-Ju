@@ -3,6 +3,7 @@
 
 char tipoFunc[20];
 int temRetorno;
+float retornoFuncao;
 void retornoDaFuncao(char *, float);
 
 #endif

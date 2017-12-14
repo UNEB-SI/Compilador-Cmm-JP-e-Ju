@@ -5,18 +5,17 @@
 #include "anasint.h"
 #include "anasem.c"
 #include "GerenciadorTS.c"
+#include "MP.h"
 #include <unistd.h>
 
-
-float retornoFuncao;
 // INICIO DOS PROCEDIMENTOS DE ANÁLISE DE EXPRESSÕES ARITMÉTICAS
 
 //Função OK
 float Expressao() {
   float primOp = 0, resultado = 0;
-  static int i = 0; //Contador estático que não mudará seu valor independente da vez que a função seja chamada
+  // static int i = 0; //Contador estático que não mudará seu valor independente da vez que a função seja chamada
 
-  printf("------ ENTROU NO EXPR %d\n", i);
+  // printf("------ ENTROU NO EXPR %d\n", i);
   primOp = expr_simp();
   if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "maior_igual") || !strcmp(T.sinal, "menor_igual")
                                                                      || !strcmp(T.sinal, "menor")
@@ -31,7 +30,7 @@ float Expressao() {
   else
     resultado = primOp; /*Se não houver nenhum operador relacional pra comparar com outra expressão, o
                         resultado é o próprio valor da primeira operação*/
-  printf("----- EXPRESSAO %d: %.0f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
+  // printf("----- EXPRESSAO %d: %.0f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
   return resultado;
 }
 
@@ -281,6 +280,7 @@ void prog() {
   int semparam = 0;
   char tipoAux[30]; // variável auxiliar para armazenar o tipo da variável ou função
   static int posRelGlobal = 0, posRelLocal = 0; //Armazena a posição relativa das variáveis globais e locais no código cmm
+  int qtdVariaveisGlobais = 0, qtdVariaveisLocais = 0, qtdParams = 0;
 
   //Verifica se o token atual é um protótipo de função
   if (!strcmp(T.categoria, "PR") && !strcmp(T.lexema, "prototipo")) {
@@ -310,8 +310,6 @@ void prog() {
         strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
         strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
         pilhaSimbolos[topoSimbolos].escopo = global;
-        if (!ehprototipo)
-          pilhaSimbolos[topoSimbolos].endereco = posRelGlobal++;
         pilhaSimbolos[topoSimbolos].ehZumbi = 0;
         topoSimbolos++;
         T = analex(FD);
@@ -335,7 +333,6 @@ void prog() {
               strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
               strcpy(pilhaSimbolos[topoSimbolos].categoria, "funcao");
               pilhaSimbolos[topoSimbolos].escopo = global;
-              pilhaSimbolos[topoSimbolos].endereco = posRelGlobal++;
               pilhaSimbolos[topoSimbolos].ehZumbi = 0;
               topoSimbolos++;
             }
@@ -356,6 +353,12 @@ void prog() {
       int x = --topoSimbolos;
       if (!ehprototipo) {
         strcpy(pilhaSimbolos[x].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
+        printf("GOTO --------------------- L%d\n", ++label);
+        printf("LABEL -------------------- L%d\n", ++label);
+        printf("INIPR 1\n");
+        pilhaSimbolos[x].endereco = label;
+        if (!strcmp(pilhaSimbolos[x].nome, "principal")) // Se a função for principal, salva seu label numa variável para uso posterior
+          labelPrincipal = label;
         ehfuncao = 1;
         temRetorno = 0;
       }
@@ -421,6 +424,12 @@ void prog() {
       o token atual, o laço continuará rodando. Se for vírgula,
       o primeiro analex(FD) do laço pulará */
     }
+    else if(!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "ponto_virgula") || !strcmp(T.sinal, "virgula"))) {
+      if (!strcmp(pilhaSimbolos[topoSimbolos-1].nome, "principal"))
+        erro(28);
+      qtdVariaveisGlobais++;
+      pilhaSimbolos[topoSimbolos-1].endereco = posRelGlobal++;
+    }
     else if (ehprototipo && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_par"))) {
       erro(7);
     }
@@ -429,8 +438,11 @@ void prog() {
     }
   } while(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "virgula"));
 
+
   if (!ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
     T = analex(FD);
+    if (!ehprototipo)
+      printf("AMEM %d\n", qtdVariaveisGlobais);
   }
 
   else if (!ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
@@ -444,7 +456,7 @@ void prog() {
   }
 
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
-    int i=topoSimbolos-1, j=0, naoEhFuncao=1, posFunc=topoSimbolos, qtdParams=0;
+    int i=topoSimbolos-1, j=0, naoEhFuncao=1, posFunc=topoSimbolos;
 
     /*Confere se os tipos dos parâmetros da declaração da função são compatíveis com os parâmetros de seu
     protótipo, caso este existir*/
@@ -479,6 +491,9 @@ void prog() {
       }
     } // Se o protótipo não for encontrado, o fluxo continua normalmente.
 
+    if (qtdParams) //Se a quantidade de parâmetros for diferente de 0, aloca-se a memória para eles
+      printf("AMEM %d\n", qtdParams);
+
     //Adiciona o endereço dos parâmetros da última função declarada
     while (++posFunc < topoSimbolos)
       if (!strcmp(pilhaSimbolos[posFunc].categoria, "param"))
@@ -494,7 +509,6 @@ void prog() {
                                      ||  !strcmp(T.lexema, "real")
                                      ||  !strcmp(T.lexema, "booleano")))
       { //declaração de variáveis locais da função
-
         strcpy(tipoAux, T.lexema);
         do { //Fará a leitura e armazenamento das variáveis para a pilha de simbolos
           T = analex(FD);
@@ -507,22 +521,30 @@ void prog() {
               pilhaSimbolos[topoSimbolos].escopo = local;
               pilhaSimbolos[topoSimbolos].endereco = posRelLocal++;
               pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+              qtdVariaveisLocais++;
               topoSimbolos++;
             }
             else erro(19);
             T = analex(FD);
           }
+          else if (!strcmp(T.lexema, "principal"))
+            erro(29);
           else
             erro(6);
         } while(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "virgula"));
 
         if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
           T = analex(FD);
+          printf("AMEM %d\n", qtdVariaveisLocais);
+          //qtdVariaveisLocais = 0;
         }
         else if (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
           erro(8);
         }
       }
+
+      else if (!strcmp(T.lexema, "principal"))
+        erro(14);
 
       else if (!strcmp(T.lexema, "EOF"))
         erro(10);
@@ -530,17 +552,27 @@ void prog() {
       else {
         cmd(); //chama o próximo token
       }
-
-
-
     }
   }
 
   if(ehfuncao && strcmp(tipoFunc, "semretorno") && temRetorno==0){
     erro(26);
   }
-  
+
   if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
+    int i = topoSimbolos-1;
+    while (strcmp(pilhaSimbolos[i].categoria, "funcao")) { //procura na pilha se pela última função
+      if (!strcmp(pilhaSimbolos[i].categoria, "param"))
+        qtdParams++;
+      i--;
+    }
+    
+    if (!strcmp(pilhaSimbolos[i].tipo, "semretorno")) {
+      if (qtdVariaveisLocais)
+        printf("DMEM %d\n", qtdVariaveisLocais);
+      printf("RET 1,%d\n", qtdParams);
+      printf("LABEL L%d\n", pilhaSimbolos[i].endereco-1);
+    }
 
     T = analex(FD);
     posRelLocal = 0;
@@ -594,6 +626,10 @@ void cmd() {
       T = analex(FD);
 
       if (!strcmp(T.sinal, "abre_par")) { //verifica se o token atual é abre parenteses
+        if (!(!strcmp(pilhaSimbolos[i].tipo, "semretorno"))) { // Verifica se o tipo da função possui valor de retorno
+          erro(27); // Se possuir, emite erro indicando que este tipo de função não deve ser tratado como um comando.
+        }
+
         T = analex(FD);
         Expressao();
 
@@ -626,16 +662,34 @@ void cmd() {
       }
     }
     else if (!strcmp(T.categoria, "PR")) {
-
       if(!strcmp(T.lexema, "retorne")){
-        temRetorno = 1;
         T = analex(FD);
-        retornoFuncao = Expressao();
-        //printf("TIPO: %s e EXPR: %f\n", tipoFunc, retornoFuncao);
-        retornoDaFuncao(tipoFunc, retornoFuncao);
+
+        int qtdVariaveisLocais=0, qtdParams=0, i = topoSimbolos-1;
+        while (pilhaSimbolos[i].escopo == local && !strcmp(pilhaSimbolos[i].categoria, "variavel")) { //procura na pilha se é variável local
+          qtdVariaveisLocais++;
+          i--;
+        }
+        while (pilhaSimbolos[i].escopo == local && !strcmp(pilhaSimbolos[i].categoria, "param")) { //procura na pilha se é variável local
+          qtdParams++;
+          i--;
+        }
+
+        if (!(!strcmp(T.lexema, ";"))) { // Verifica se o retorno possui expressão associada ou não
+          temRetorno = 1; // Entra no caso "retorne expressao;", portanto existe valor de retorno.
+          retornoFuncao = Expressao();
+          retornoDaFuncao(tipoFunc, retornoFuncao);
+          printf("STOR 1,%d\n", -3-qtdParams);
+          if (qtdVariaveisLocais)
+            printf("DMEM %d\n", qtdVariaveisLocais);
+          printf("RET 1,%d\n", qtdParams);
+          printf("LABEL L%d\n", pilhaSimbolos[i].endereco-1);
+        }
+        else
+          temRetorno = 0; // No caso de um "retorne;", uma função do tipo "semretorno" pode executar a instrução sem problemas
 
         if(!strcmp(T.sinal, "ponto_virgula"))
-        T = analex(FD);
+          T = analex(FD);
         else {
           erro(8);
         }

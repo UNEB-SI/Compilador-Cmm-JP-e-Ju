@@ -1,7 +1,7 @@
 inteiro vish, hdhm, aham;
 real  te;
-prototipo inteiro barril(real eNois, inteiro naFita);
-inteiro barril(real b, inteiro p) {
+prototipo inteiro barril(inteiro eNois, inteiro naFita);
+inteiro barril(inteiro b, inteiro p) {
   inteiro a;
   inteiro c;
   a = c/2+3*aham;
@@ -10,11 +10,23 @@ inteiro barril(real b, inteiro p) {
   retorne a;
 }
 
+semretorno mermao(semparam) {
+  retorne;
+}
+
+
 inteiro coee(semparam) {
-  inteiro b;
+
+  inteiro b, f, fd, fdf, fdds;
   inteiro a;
+  a = 1 + barril();
+  se (a||b)
+    mermao();
   retorne a;
 }
-semretorno mermao(semparam) {
-  
+
+semretorno principal(inteiro a, inteiro b) {
+  inteiro c, d, e;
 }
+
+inteiro pacoca, peDeMuleque, leiteMoca;
