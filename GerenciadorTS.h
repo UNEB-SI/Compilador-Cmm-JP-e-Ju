@@ -1,6 +1,12 @@
 #ifndef GerenciadorTS_H
 #define GerenciadorTS_H
 
+#include "analex.h"
+
+typedef enum escopo {
+  global, local
+} Escopo;
+
 //Definição do tipo Símbolo
 typedef struct simbolos {
   char nome[30], tipo[30], categoria[30];
@@ -9,9 +15,6 @@ typedef struct simbolos {
   int endereco;
   float valor;
 } simbolo;
-
-simbolo pilhaSimbolos[100];
-int topoSimbolos = 0;
 
 void apagaSimbolos();
 int existeID(token, Escopo);

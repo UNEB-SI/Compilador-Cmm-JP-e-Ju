@@ -1,32 +1,15 @@
-inteiro vish, hdhm, aham;
-real  te;
-prototipo inteiro barril(inteiro eNois, inteiro naFita);
-inteiro barril(inteiro b, inteiro p) {
-  inteiro a;
-  inteiro c;
-  a = c/2+3*aham;
-  /*c = 25.3 + 2.1;*/
-  /*rirariariaria fdsj*/
-  retorne a;
-}
+inteiro a, b, c;
+prototipo inteiro contagem(inteiro, real, inteiro, inteiro);
 
-semretorno mermao(semparam) {
-  retorne;
+
+inteiro contagem(inteiro a, real b, inteiro c, inteiro d){
+    real x;
+    c = a+c;
+    retorne c;
 }
 
 
-inteiro coee(semparam) {
-
-  inteiro b, f, fd, fdf, fdds;
-  inteiro a;
-  a = 1 + barril();
-  se (a||b)
-    mermao();
-  retorne a;
+semretorno principal(semparam) {
+  inteiro x;
+  x = contagem(10, 1.3, 5, 7);
 }
-
-semretorno principal(inteiro a, inteiro b) {
-  inteiro c, d, e;
-}
-
-inteiro pacoca, peDeMuleque, leiteMoca;

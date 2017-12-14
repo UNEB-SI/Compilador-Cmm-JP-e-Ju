@@ -1,14 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "analex.c"
-#include "anasint.h"
-#include "anasem.c"
-#include "GerenciadorTS.c"
+#include "analex.h"
+#include "anasem.h"
+#include "GerenciadorTS.h"
 #include "MP.h"
+#include "erros.h"
+#include "anasint.h"
 #include <unistd.h>
 
 // INICIO DOS PROCEDIMENTOS DE ANÁLISE DE EXPRESSÕES ARITMÉTICAS
+int contParam = 0;
+int totalParam = 0;
+int label = 0, labelPrincipal = 0;
+extern token T;
+extern FILE *FD;
+extern simbolo pilhaSimbolos[100];
+extern int topoSimbolos;
+extern char *PR[];
+extern char *categorias[];
+extern char *sinais[];
+extern float temRetorno;
+extern char tipoFunc[];
+extern float retornoFuncao;
 
 //Função OK
 float Expressao() {
@@ -147,9 +161,11 @@ float Fator() {
     if (!strcmp(T.categoria, "ID")) { // Tratamento de operações com identificador: variável ou retorno de chamada de função
       int i=0, j;
       while (i < topoSimbolos) { // Busca encontrar o identificador na pilha de Símbolos
-        if (!strcmp(T.lexema, pilhaSimbolos[i].nome))
+        if (!strcmp(T.lexema, pilhaSimbolos[i].nome)){
+          totalParam = getTotalParam(i);
           if (!pilhaSimbolos[i].ehZumbi)
             break; //Encontra o identificador na pilha e sai do laço
+        }
         i++;
       }
       if (i == topoSimbolos)
@@ -158,7 +174,8 @@ float Fator() {
       j=i+1; //contador para verificar se o próximo elementro na pilha é um parâmetro de função
       if(!strcmp(T.sinal, "abre_par")) {
         T = analex(FD);
-        if (!strcmp(pilhaSimbolos[j].categoria, "param")) {
+        if (!strcmp(pilhaSimbolos[j].categoria, "param")) { //AQUI
+          contParam++;
           resultado = Expressao();
           if (resultado == 0) { //verifica se a expressão no parâmetro é do tipo inteiro
             if (!strcmp(pilhaSimbolos[j].tipo, PR[2])) { //verifica se o parâmetro é do tipo inteiro
@@ -168,6 +185,7 @@ float Fator() {
           }
           else if (resultado == 1) { //verifica se a expressão no parâmetro é do tipo real
             if (!strcmp(pilhaSimbolos[j].categoria, "param")) {
+              contParam++;
               if (!strcmp(pilhaSimbolos[j].tipo, PR[3])) { //verifica se o parâmetro é do tipo real
                 j++;
               }
@@ -179,6 +197,7 @@ float Fator() {
             while(!strcmp(T.sinal, "virgula")) {
               T = analex(FD);
               if (!strcmp(pilhaSimbolos[j].categoria, "param")) {
+                contParam++;
                 resultado = Expressao();
                 if (resultado == 0) {
                   if (!strcmp(pilhaSimbolos[j].tipo, PR[2])) {
@@ -195,10 +214,15 @@ float Fator() {
                   }
                 }
               }
+              else if (strcmp(T.sinal, "fecha_par")){
+                contParam++;
+              }
             }
           }
         }
         if(!strcmp(T.sinal, "fecha_par")) {
+          paramChamadaFuncao(totalParam, contParam); //verifica paramentros
+
           if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[1])) //verifica se o número é do tipo inteiro ou char
             resultado = 0;
           else if (!strcmp(pilhaSimbolos[i].tipo, PR[3])) //verifica se o número é do tipo real
@@ -476,7 +500,7 @@ void prog() {
                     erro(22); //Se os tipos não forem compatíveis, emite-se um erro
                 }
                 else
-                  erro(23); //Emite erro se faltar um parâmetro na declaração da função
+                  erro(23); //Emite erro se faltar um parâmetro na declaração da função //AQUI
                 j++;
               }
               if (!strcmp(pilhaSimbolos[++i].categoria, "param"))
@@ -555,9 +579,8 @@ void prog() {
     }
   }
 
-  if(ehfuncao && strcmp(tipoFunc, "semretorno") && temRetorno==0){
-    erro(26);
-  }
+  if(ehfuncao)
+    retornoDaFuncao(tipoFunc, 0.0);
 
   if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
     int i = topoSimbolos-1;
@@ -566,7 +589,7 @@ void prog() {
         qtdParams++;
       i--;
     }
-    
+
     if (!strcmp(pilhaSimbolos[i].tipo, "semretorno")) {
       if (qtdVariaveisLocais)
         printf("DMEM %d\n", qtdVariaveisLocais);

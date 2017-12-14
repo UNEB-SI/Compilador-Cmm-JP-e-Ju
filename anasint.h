@@ -1,9 +1,6 @@
 #ifndef ANASINT_H
 #define ANASINT_H
 
-// Variáveis Globais
-extern token T;
-
 // Assinatura de Funções
 float Expressao();
 float expr_simp();

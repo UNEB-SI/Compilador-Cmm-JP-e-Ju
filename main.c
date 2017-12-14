@@ -1,15 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "analex.c"
-#include "anasint.c"
-//#include "MP.h"
+#include "analex.h"
+#include "anasint.h"
+#include "erros.h"
+#include "GerenciadorTS.h"
+#include "MP.h"
 
-extern FILE *FD;
+FILE *FD;
+extern token T;
+extern simbolo pilhaSimbolos[100];
+extern int topoSimbolos;
+extern int labelPrincipal;
+extern int qtd_ID;
+extern char ID[100][100];
+extern int qtd_ID;
 
 int main() {
 
-  int c, i=0, qtdVariaveisGlobais = 0;
+  int i=0, qtdVariaveisGlobais = 0;
 
   FD = fopen("documento.txt", "r");
 

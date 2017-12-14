@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "analex.h"
+#include "erros.h"
 #include "GerenciadorTS.h"
+
+simbolo pilhaSimbolos[100];
+int topoSimbolos = 0;
 
 //Função que apaga identificadores da pilha de Símbolos
 void apagaSimbolos() {
