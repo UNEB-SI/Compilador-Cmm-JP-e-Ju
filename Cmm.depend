@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1513270690 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\analex.c
+1513286982 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\analex.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -8,7 +8,7 @@
 
 1513268439 c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\analex.h
 
-1513270748 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\anasem.c
+1513287906 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\anasem.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -23,7 +23,7 @@
 
 1513268394 c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\erros.h
 
-1513270767 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\anasint.c
+1513287915 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\anasint.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -39,7 +39,7 @@
 
 1513268399 c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\anasint.h
 
-1513269324 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\erros.c
+1513287575 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\erros.c
 	<stdio.h>
 	<stdlib.h>
 	"erros.h"
@@ -54,6 +54,70 @@
 	"GerenciadorTS.h"
 
 1513269744 source:c:\users\john_peter\desktop\compilador-cmm-jp-e-ju-analisesemantica_1\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"analex.h"
+	"anasint.h"
+	"erros.h"
+	"GerenciadorTS.h"
+	"MP.h"
+
+1513286982 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\analex.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	"analex.h"
+
+1513268439 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\analex.h
+
+1513287906 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasem.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"GerenciadorTS.h"
+	"anasem.h"
+	"erros.h"
+
+1513271279 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\gerenciadorts.h
+	"analex.h"
+
+1513270911 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasem.h
+
+1513268394 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\erros.h
+
+1513290624 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasint.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"analex.h"
+	"anasem.h"
+	"GerenciadorTS.h"
+	"MP.h"
+	"erros.h"
+	"anasint.h"
+	<unistd.h>
+
+1513268389 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\mp.h
+
+1513268399 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasint.h
+
+1513287575 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\erros.c
+	<stdio.h>
+	<stdlib.h>
+	"erros.h"
+	"analex.h"
+
+1513268475 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\gerenciadorts.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"analex.h"
+	"erros.h"
+	"GerenciadorTS.h"
+
+1513288895 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

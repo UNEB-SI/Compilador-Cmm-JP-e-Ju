@@ -5,6 +5,7 @@ prototipo inteiro contagem(inteiro, real, inteiro, inteiro);
 inteiro contagem(inteiro a, real b, inteiro c, inteiro d){
     real x;
     c = a+c;
+    enquanto (x == c) x = 1+2;
     retorne c;
 }
 

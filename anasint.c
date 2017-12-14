@@ -37,9 +37,17 @@ float Expressao() {
                                                                      || !strcmp(T.sinal, "nao_igual")
                                                                      || !strcmp(T.sinal, "igual_igual")))
   {
-    //T = analex(FD);
-    op_rel();
+    printf("EITA\n");
+    char sinal[30];
+    printf("MANO QUAL FOI\n");
+    strcpy(sinal, T.sinal);
+    printf("HUDJSAFNSDJÇFNDSFJA\n");
+    T = analex(FD);
+    printf("PASSOU ANALEX\n");
     resultado = expr_simp();
+    printf("EXPRESSAO SIMPLES FOI DE BOA\n");
+    op_rel(sinal);
+    printf("OP_REL TAMBEM FOI TRANQUILO\n");
   }
   else
     resultado = primOp; /*Se não houver nenhum operador relacional pra comparar com outra expressão, o
@@ -660,6 +668,9 @@ void cmd() {
           T = analex(FD);
           Expressao();
         }
+
+        printf("CALL L%d\n", pilhaSimbolos[i].endereco);
+
         if (!strcmp(T.sinal, "fecha_par")) {
           T = analex(FD);
           if(!strcmp(T.sinal, "ponto_virgula"))
@@ -679,6 +690,7 @@ void cmd() {
           T = analex(FD);
         else
           erro(8);
+      printf("STOR 1,%d\n", pilhaSimbolos[i].endereco);
       }
       else if (strcmp(T.sinal, "ponto_virgula")) { // Se o sinal não for ponto e vírgula, apresenta erro
         erro(8); //Falta sinal de ponto e vírgula
@@ -724,15 +736,23 @@ void cmd() {
 
           atrib();
           if(!strcmp(T.sinal, "ponto_virgula")) {
+            printf("LABEL L%d\n", ++label);
             T = analex(FD);
             Expressao();
             if(!strcmp(T.sinal, "ponto_virgula")) {
+              printf("GOFALSE L%d\n", ++label);
+              printf("GOTO L%d\n", ++label);
+              printf("LABEL L%d\n", ++label);
               T = analex(FD);
               //Verificar com Atta se é atrib ou expressão
               atrib();
               if (!strcmp(T.sinal, "fecha_par")) {
+                printf("GOTO L%d\n", label-3);
+                printf("LABEL L%d\n", label-1);
                 T = analex(FD);
                 cmd();
+                printf("GOTO L%d\n", label);
+                printf("LABEL L%d\n", label-2);
               }
               else {
                 erro(3);
@@ -750,11 +770,15 @@ void cmd() {
       else if (!strcmp(T.lexema, "enquanto")) {
         T = analex(FD);
         if (!strcmp(T.sinal, "abre_par")) {
+          printf("LABEL L%d\n", ++label);
           T = analex(FD);
           Expressao();
+          printf("GOFALSE L%d\n", ++label);
           if (!strcmp(T.sinal, "fecha_par")) {
             T = analex(FD);
             cmd();
+            printf("GOTO L%d\n", label-1);
+            printf("LABEL L%d\n", label);
           }
           else {
             erro(3);
@@ -767,12 +791,16 @@ void cmd() {
           T = analex(FD);
           Expressao();
           if (!strcmp(T.sinal, "fecha_par")) {
+            printf("GOFALSE %d\n", ++label);
             T = analex(FD);
             cmd();
             if (!strcmp(T.lexema, "senao")) {
+              printf("GOTO %d\n", ++label);
+              printf("LABEL %d\n", label-1);
               T = analex(FD);
               cmd();
             }
+            printf("LABEL %d\n", label);
           }
           else {
             erro(3);
@@ -805,12 +833,42 @@ void atrib(){
 }
 
 //Função OK
-void op_rel(){
-  if (!strcmp(T.categoria, "SN")) {
-    if (!strcmp(T.sinal, "maior_igual") || !strcmp(T.sinal, "menor_igual") ||
-    !strcmp(T.sinal, "menor") || !strcmp(T.sinal, "maior") ||
-    !strcmp(T.sinal, "nao_igual") || !strcmp(T.sinal, "igual_igual" )) {
-      T = analex(FD);
+void op_rel(char *sinal){
+    if (!strcmp(sinal, "maior_igual") || !strcmp(sinal, "menor_igual") ||
+    !strcmp(sinal, "menor") || !strcmp(sinal, "maior") ||
+    !strcmp(T.sinal, "nao_igual") || !strcmp(sinal, "igual_igual" )) {
+      if (!strcmp(sinal, "igual_igual" )) {
+        printf("SUB\n");
+        printf("GOFALSE L%d\n", ++label);
+        printf("PUSH 0\n");
+        printf("GOTO L%d\n", ++label);
+        printf("LABEL L%d\n", label-1);
+        printf("PUSH 1\n");
+        printf("LABEL L%d\n", label);
+      }
+
+      else if (!strcmp(sinal, "maior_igual")) {
+        printf("SUB\n");
+        printf("GOTRUE L%d\n", ++label);
+        printf("PUSH 0\n");
+        printf("GOTO L%d\n", ++label);
+        printf("LABEL L%d\n", label-1);
+        printf("PUSH 1\n");
+        printf("LABEL L%d\n", label);
+      }
+
+      else if (!strcmp(sinal, "menor_igual")) {
+        printf("SUB\n");
+        printf("COPY\n");
+        printf("GOFALSE L%d\n", ++label);
+        printf("GOTRUE L%d\n", ++label);
+        printf("PUSH 1\n");
+        printf("GOTO L%d\n", ++label);
+        printf("LABEL L%d\n", label-2);
+        printf("POP\n");
+        printf("LABEL L%d\n", label-1);
+        printf("PUSH 0\n");
+        printf("LABEL L%d\n", label);
+      }
     }
-  }
 }
