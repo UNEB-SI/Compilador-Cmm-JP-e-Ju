@@ -37,17 +37,11 @@ float Expressao() {
                                                                      || !strcmp(T.sinal, "nao_igual")
                                                                      || !strcmp(T.sinal, "igual_igual")))
   {
-    printf("EITA\n");
     char sinal[30];
-    printf("MANO QUAL FOI\n");
     strcpy(sinal, T.sinal);
-    printf("HUDJSAFNSDJÇFNDSFJA\n");
     T = analex(FD);
-    printf("PASSOU ANALEX\n");
     resultado = expr_simp();
-    printf("EXPRESSAO SIMPLES FOI DE BOA\n");
     op_rel(sinal);
-    printf("OP_REL TAMBEM FOI TRANQUILO\n");
   }
   else
     resultado = primOp; /*Se não houver nenhum operador relacional pra comparar com outra expressão, o
@@ -162,11 +156,11 @@ float Termo() {
 float Fator() {
   float resultado=0;
 
-  if(!strcmp(T.categoria, "ID") || !strcmp(T.categoria, "CT_I") ||
-   !strcmp(T.categoria, "CT_R") || !strcmp(T.categoria, "CT_C") ||
-   !strcmp(T.categoria, "CT_LT"))
+  if(!strcmp(T.categoria, "ID")  || !strcmp(T.categoria, "CT_I") ||
+   !strcmp(T.categoria, "CT_R")  || !strcmp(T.categoria, "CT_C") ||
+   !strcmp(T.categoria, "CT_LT") || (!strcmp(T.categoria, "PR") && !strcmp(T.lexema, "principal")))
   {
-    if (!strcmp(T.categoria, "ID")) { // Tratamento de operações com identificador: variável ou retorno de chamada de função
+    if (!strcmp(T.categoria, "ID") || !strcmp(T.lexema, "principal")) { // Tratamento de operações com identificador: variável ou retorno de chamada de função
       int i=0, j;
       while (i < topoSimbolos) { // Busca encontrar o identificador na pilha de Símbolos
         if (!strcmp(T.lexema, pilhaSimbolos[i].nome)){
@@ -181,6 +175,7 @@ float Fator() {
       T = analex(FD);
       j=i+1; //contador para verificar se o próximo elementro na pilha é um parâmetro de função
       if(!strcmp(T.sinal, "abre_par")) {
+        printf("AMEM 1\n"); // Armazena na MP o espaço de memória para o valor de retorno da função
         T = analex(FD);
         if (!strcmp(pilhaSimbolos[j].categoria, "param")) { //AQUI
           contParam++;
@@ -237,7 +232,7 @@ float Fator() {
             resultado = 1;
           else
             erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
-          printf("LOAD %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
+          printf("CALL L%d\n", pilhaSimbolos[i].endereco);
           T = analex(FD);
         }
         else {
@@ -342,7 +337,10 @@ void prog() {
         strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
         strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
         pilhaSimbolos[topoSimbolos].escopo = global;
-        pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+        if (!ehprototipo)
+          pilhaSimbolos[topoSimbolos].ehZumbi = 0;
+        else
+          pilhaSimbolos[topoSimbolos].ehZumbi = 1;
         topoSimbolos++;
         T = analex(FD);
       }
@@ -523,8 +521,8 @@ void prog() {
       }
     } // Se o protótipo não for encontrado, o fluxo continua normalmente.
 
-    if (qtdParams) //Se a quantidade de parâmetros for diferente de 0, aloca-se a memória para eles
-      printf("AMEM %d\n", qtdParams);
+    /*if (qtdParams) //Se a quantidade de parâmetros for diferente de 0, aloca-se a memória para eles
+      printf("AMEM %d\n", qtdParams);*/
 
     //Adiciona o endereço dos parâmetros da última função declarada
     while (++posFunc < topoSimbolos)
@@ -690,7 +688,7 @@ void cmd() {
           T = analex(FD);
         else
           erro(8);
-      printf("STOR 1,%d\n", pilhaSimbolos[i].endereco);
+      printf("STOR %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
       }
       else if (strcmp(T.sinal, "ponto_virgula")) { // Se o sinal não for ponto e vírgula, apresenta erro
         erro(8); //Falta sinal de ponto e vírgula
@@ -716,7 +714,7 @@ void cmd() {
           retornoDaFuncao(tipoFunc, retornoFuncao);
           printf("STOR 1,%d\n", -3-qtdParams);
           if (qtdVariaveisLocais)
-            printf("DMEM %d\n", qtdVariaveisLocais);
+            printf("DMEM %d\n", qtdVariaveisLocais+1); // Desaloca o espaço das variáveis locais e o do valor de retorno
           printf("RET 1,%d\n", qtdParams);
           printf("LABEL L%d\n", pilhaSimbolos[i].endereco-1);
         }
@@ -827,6 +825,7 @@ void atrib(){
       if (!strcmp(T.sinal, "igual")){
         T = analex(FD);
         pilhaSimbolos[i].valor = Expressao();
+        printf("STOR %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
       }
     }
   }
@@ -847,7 +846,17 @@ void op_rel(char *sinal){
         printf("LABEL L%d\n", label);
       }
 
-      else if (!strcmp(sinal, "maior_igual")) {
+      else if (!strcmp(sinal, "nao_igual" )) {
+        printf("SUB\n");
+        printf("GOFALSE L%d\n", ++label);
+        printf("PUSH 1\n");
+        printf("GOTO L%d\n", ++label);
+        printf("LABEL L%d\n", label-1);
+        printf("PUSH 0\n");
+        printf("LABEL L%d\n", label);
+      }
+
+      else if (!strcmp(sinal, "maior")) {
         printf("SUB\n");
         printf("GOTRUE L%d\n", ++label);
         printf("PUSH 0\n");
@@ -857,7 +866,21 @@ void op_rel(char *sinal){
         printf("LABEL L%d\n", label);
       }
 
-      else if (!strcmp(sinal, "menor_igual")) {
+      else if (!strcmp(sinal, "maior_igual")) {
+        printf("SUB\n");
+        printf("COPY\n");
+        printf("GOFALSE L%d\n", ++label);
+        printf("GOTRUE L%d\n", ++label);
+        printf("PUSH 0\n");
+        printf("GOTO L%d\n", ++label);
+        printf("LABEL L%d\n", label-2);
+        printf("POP\n");
+        printf("LABEL L%d\n", label-1);
+        printf("PUSH 1\n");
+        printf("LABEL L%d\n", label);
+      }
+
+      else if (!strcmp(sinal, "menor")) {
         printf("SUB\n");
         printf("COPY\n");
         printf("GOFALSE L%d\n", ++label);
@@ -866,6 +889,16 @@ void op_rel(char *sinal){
         printf("GOTO L%d\n", ++label);
         printf("LABEL L%d\n", label-2);
         printf("POP\n");
+        printf("LABEL L%d\n", label-1);
+        printf("PUSH 0\n");
+        printf("LABEL L%d\n", label);
+      }
+
+      else if (!strcmp(sinal, "menor_igual")) {
+        printf("SUB\n");
+        printf("GOTRUE L%d\n", ++label);
+        printf("PUSH 1\n");
+        printf("GOTO L%d\n", ++label);
         printf("LABEL L%d\n", label-1);
         printf("PUSH 0\n");
         printf("LABEL L%d\n", label);
