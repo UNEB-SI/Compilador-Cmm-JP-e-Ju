@@ -4,23 +4,24 @@
 #include <ctype.h>
 #include "analex.h"
 
-
-char *categorias[] = {"PR", "SN", "ID", "CT_I", "CT_R", "CT_LT", "CT_C", "FIM_ARQUIVO"};
-                      // 0     1     2      3        4       5       6          7
+//---------------------- Variáveis Globais --------------------------------------------------------
+// Conjunto de categorias de tokens da linguagem
+const char *categorias[] = {"PR", "SN", "ID", "CT_I", "CT_R", "CT_LT", "CT_C", "FIM_ARQUIVO"};
+                          // 0     1     2      3        4       5       6          7
 
 // Conjunto de sinais e operadores da linguagem
-token sinais[] = { {"SN", "+", "mais"}, {"SN", "-", "menos"}, {"SN", "*", "asterisco"},
-                   {"SN", "/", "barra"}, {"SN", "=", "igual"}, {"SN", "<", "menor"},
-                   {"SN", ">", "maior"}, {"SN", "<=", "menor_igual"}, {"SN", ">=", "maior_igual"},
-                   {"SN", "(", "abre_par"}, {"SN", ")", "fecha_par"}, {"SN", "{", "abre_chaves"},
-                   {"SN", "}", "fecha_chaves"}, {"SN", "[", "abre_colchetes"}, {"SN", "]", "fecha_colchetes"},
-                   {"SN", "&&", "e_logico"}, {"SN", "||", "ou_logico"}, {"SN", "!", "nao_logico"},
-                   {"SN", "!=", "nao_igual"}, {"SN", "==", "igual_igual"}, {"SN", "\'", "apostofo"}, {"SN", "\"", "aspas"},
-                   {"SN", ";", "ponto_virgula"}, {"SN", ".", "ponto"}, {"SN", ",", "virgula"}, {"SN", "\\", "contra-barra"}
-                };
+const token sinais[] = { {"SN", "+", "mais"}, {"SN", "-", "menos"}, {"SN", "*", "asterisco"},
+                         {"SN", "/", "barra"}, {"SN", "=", "igual"}, {"SN", "<", "menor"},
+                         {"SN", ">", "maior"}, {"SN", "<=", "menor_igual"}, {"SN", ">=", "maior_igual"},
+                         {"SN", "(", "abre_par"}, {"SN", ")", "fecha_par"}, {"SN", "{", "abre_chaves"},
+                         {"SN", "}", "fecha_chaves"}, {"SN", "[", "abre_colchetes"}, {"SN", "]", "fecha_colchetes"},
+                         {"SN", "&&", "e_logico"}, {"SN", "||", "ou_logico"}, {"SN", "!", "nao_logico"},
+                         {"SN", "!=", "nao_igual"}, {"SN", "==", "igual_igual"}, {"SN", "\'", "apostofo"}, {"SN", "\"", "aspas"},
+                         {"SN", ";", "ponto_virgula"}, {"SN", ".", "ponto"}, {"SN", ",", "virgula"}, {"SN", "\\", "contra-barra"}
+                      };
 
 // Conjunto de Palavras Reservadas da linguagem Cmm
-char *PR[] = {
+const char *PR[] = {
   "semretorno", "caracter", "inteiro", "real", "booleano", "semparam", "se", "senao",
   "enquanto", "para", "retorne", "principal", "prototipo"
 };
@@ -35,7 +36,7 @@ int qtd_ID = 0;
 
 char literais[100][100];
 int qtd_literais = 0;
-
+//---------------------- Fim das Variáveis Globais ----------------------------------------------------
 
 //Lê um caracter e retorna 1 caso seja um sinal da linguagem e 0 (zero), caso contrário
 int ehsinal(char c) {

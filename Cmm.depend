@@ -63,7 +63,7 @@
 	"GerenciadorTS.h"
 	"MP.h"
 
-1513286982 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\analex.c
+1513363151 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\analex.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -72,13 +72,13 @@
 
 1513268439 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\analex.h
 
-1513287906 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasem.c
+1513392742 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasem.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
-	"GerenciadorTS.h"
 	"anasem.h"
 	"erros.h"
+	"GerenciadorTS.h"
 
 1513271279 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\gerenciadorts.h
 	"analex.h"
@@ -87,29 +87,28 @@
 
 1513268394 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\erros.h
 
-1513307399 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasint.c
+1513392301 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasint.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"analex.h"
-	"anasem.h"
-	"GerenciadorTS.h"
-	"MP.h"
-	"erros.h"
 	"anasint.h"
+	"anasem.h"
+	"erros.h"
+	"GerenciadorTS.h"
 	<unistd.h>
 
 1513268389 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\mp.h
 
 1513268399 c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\anasint.h
 
-1513287575 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\erros.c
+1513363405 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\erros.c
 	<stdio.h>
 	<stdlib.h>
 	"erros.h"
 	"analex.h"
 
-1513268475 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\gerenciadorts.c
+1513353456 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\gerenciadorts.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -117,7 +116,7 @@
 	"erros.h"
 	"GerenciadorTS.h"
 
-1513288895 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\main.c
+1513366391 source:c:\users\john_peter\documents\uneb - sistema de informa«√o\5 semestre\compiladores\analisador sint·tico\meu analisador\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -125,5 +124,4 @@
 	"anasint.h"
 	"erros.h"
 	"GerenciadorTS.h"
-	"MP.h"
 

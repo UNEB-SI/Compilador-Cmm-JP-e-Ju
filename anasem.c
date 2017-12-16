@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "GerenciadorTS.h"
 #include "anasem.h"
 #include "erros.h"
+#include "GerenciadorTS.h"
 
 char tipoFunc[20];
 int temRetorno;
@@ -19,8 +19,8 @@ void retornoDaFuncao(char tipo[], float valor){
   if (!strcmp(tipo, "semretorno") && temRetorno==1)
     erro(25);
 
-  if(strcmp(tipo, "semretorno") && temRetorno==0)
-    erro(26);
+  /*if(strcmp(tipo, "semretorno") && temRetorno==0)
+    erro(26);*/
 }
 
 void paramChamadaFuncao(int qtdPDec, int qtdPCham){

@@ -2,24 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include "analex.h"
-#include "anasem.h"
-#include "GerenciadorTS.h"
-#include "MP.h"
-#include "erros.h"
 #include "anasint.h"
+#include "anasem.h"
+#include "erros.h"
+#include "GerenciadorTS.h"
 #include <unistd.h>
 
 // INICIO DOS PROCEDIMENTOS DE ANÁLISE DE EXPRESSÕES ARITMÉTICAS
 int contParam = 0;
 int totalParam = 0;
-int label = 0, labelPrincipal = 0;
+int label = 0, labelPrincipal = 0, labelAnterior = 0;
 extern token T;
 extern FILE *FD;
+extern FILE *MP;
 extern simbolo pilhaSimbolos[100];
 extern int topoSimbolos;
 extern char *PR[];
-extern char *categorias[];
-extern char *sinais[];
+extern const char *categorias[];
+extern const char *sinais[];
 extern float temRetorno;
 extern char tipoFunc[];
 extern float retornoFuncao;
@@ -27,9 +27,9 @@ extern float retornoFuncao;
 //Função OK
 float Expressao() {
   float primOp = 0, resultado = 0;
-  // static int i = 0; //Contador estático que não mudará seu valor independente da vez que a função seja chamada
+   static int i = 0; //Contador estático que não mudará seu valor independente da vez que a função seja chamada
 
-  // printf("------ ENTROU NO EXPR %d\n", i);
+   printf("------ ENTROU NO EXPR %d\n", i);
   primOp = expr_simp();
   if (!strcmp(T.categoria, "SN") && (!strcmp(T.sinal, "maior_igual") || !strcmp(T.sinal, "menor_igual")
                                                                      || !strcmp(T.sinal, "menor")
@@ -46,7 +46,7 @@ float Expressao() {
   else
     resultado = primOp; /*Se não houver nenhum operador relacional pra comparar com outra expressão, o
                         resultado é o próprio valor da primeira operação*/
-  // printf("----- EXPRESSAO %d: %.0f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
+   printf("----- EXPRESSAO %d: %.0f\n", i++, resultado); //Imprime o resultado. Posso colocar pra retornar depois
   return resultado;
 }
 
@@ -68,9 +68,9 @@ float expr_simp() {
         erro(17);
       else {
         if (!resultado)
-          printf("ADD\n");
+          fprintf(MP, "ADD\n");
         else if (resultado == 1)
-          printf("ADDF\n");
+          fprintf(MP, "ADDF\n");
       }
       //resultado = primOp + Termo();
     }
@@ -81,20 +81,33 @@ float expr_simp() {
         erro(17);
       else {
         if (!resultado)
-          printf("SUB\n");
+          fprintf(MP, "SUB\n");
         else if (resultado == 1)
-          printf("SUBF\n");
+          fprintf(MP, "SUBF\n");
       }
       //resultado = primOp - Termo();
     }
     else if (!strcmp(T.lexema, "||")) { // realiza a comparação dos operandos com "ou lógico"
-      T = analex(FD);
-      resultado = Termo();
-      if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
+      ++label;
+      int primeiraVez = 1;
+      while (!strcmp(T.lexema, "||")) {
+        T = analex(FD);
+        if (primeiraVez) {
+          fprintf(MP, "COPY\n");
+          fprintf(MP, "GOTRUE L%d\n", label);
+          fprintf(MP, "POP\n");
+          primeiraVez = 0;
+        }
+        resultado = Termo();
+        if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
         erro(17);
-      else {
-        printf("OR\n");
+        else {
+          fprintf(MP, "COPY\n");
+          fprintf(MP, "GOTRUE L%d\n", label);
+          fprintf(MP, "POP\n");
+        }
       }
+      fprintf(MP, "LABEL L%d\n", label);
       //resultado = primOp - Termo();
     }
     primOp = resultado; /* Usa 'primOp' como variável auxiliar para outros termos serem calculados junto
@@ -117,9 +130,9 @@ float Termo() {
         erro(17);
       else {
         if (!resultado)
-          printf("MUL\n");
+          fprintf(MP, "MUL\n");
         else if (resultado == 1)
-          printf("MULF\n");
+          fprintf(MP, "MULF\n");
       }
       //resultado = primOp * Termo();
     }
@@ -130,21 +143,34 @@ float Termo() {
         erro(17);
       else {
         if (!resultado)
-          printf("DIV\n");
+          fprintf(MP, "DIV\n");
         else if (resultado == 1)
-          printf("DIVF\n");
+          fprintf(MP, "DIVF\n");
       }
       //resultado = primOp / Termo();
     }
     else if (!strcmp(T.lexema, "&&")) { // realiza a comparação dos operandos com "e_logico"
-      T = analex(FD);
-      resultado = Termo();
-      if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
+      ++label;
+      int primeiraVez = 1;
+      while (!strcmp(T.lexema, "&&")) {
+        T = analex(FD);
+        if (primeiraVez) {
+          fprintf(MP, "COPY\n");
+          fprintf(MP, "GOFALSE L%d\n", label);
+          fprintf(MP, "POP\n");
+          primeiraVez = 0;
+        }
+        resultado = Termo();
+        if (primOp != resultado) //confere se os tipos são diferentes e um emite erro caso forem
         erro(17);
-      else {
-        printf("AND\n");
+        else {
+          fprintf(MP, "COPY\n");
+          fprintf(MP, "GOFALSE L%d\n", label);
+          fprintf(MP, "POP\n");
+        }
       }
-      //resultado = primOp / Termo();
+      fprintf(MP, "LABEL L%d\n", label);
+      //resultado = primOp - Termo();
     }
     primOp = resultado;
   }
@@ -164,9 +190,11 @@ float Fator() {
       int i=0, j;
       while (i < topoSimbolos) { // Busca encontrar o identificador na pilha de Símbolos
         if (!strcmp(T.lexema, pilhaSimbolos[i].nome)){
-          totalParam = getTotalParam(i);
-          if (!pilhaSimbolos[i].ehZumbi)
+          if (!pilhaSimbolos[i].ehZumbi) {
+            if (!strcmp(pilhaSimbolos[i].categoria, "funcao"))
+              totalParam = getTotalParam(i);
             break; //Encontra o identificador na pilha e sai do laço
+          }
         }
         i++;
       }
@@ -175,13 +203,13 @@ float Fator() {
       T = analex(FD);
       j=i+1; //contador para verificar se o próximo elementro na pilha é um parâmetro de função
       if(!strcmp(T.sinal, "abre_par")) {
-        printf("AMEM 1\n"); // Armazena na MP o espaço de memória para o valor de retorno da função
+        fprintf(MP, "AMEM 1\n"); // Armazena na MP o espaço de memória para o valor de retorno da função
         T = analex(FD);
         if (!strcmp(pilhaSimbolos[j].categoria, "param")) { //AQUI
           contParam++;
           resultado = Expressao();
-          if (resultado == 0) { //verifica se a expressão no parâmetro é do tipo inteiro
-            if (!strcmp(pilhaSimbolos[j].tipo, PR[2])) { //verifica se o parâmetro é do tipo inteiro
+          if (resultado == 0) { //verifica se a expressão no parâmetro é do tipo inteiro, caracter ou booleano
+            if (!strcmp(pilhaSimbolos[j].tipo, PR[1]) || !strcmp(pilhaSimbolos[j].tipo, PR[2]) || !strcmp(pilhaSimbolos[j].tipo, PR[4])) {
               j++;
             }
             else erro(18); //Erro de tipo de parâmtro incompatível
@@ -203,7 +231,7 @@ float Fator() {
                 contParam++;
                 resultado = Expressao();
                 if (resultado == 0) {
-                  if (!strcmp(pilhaSimbolos[j].tipo, PR[2])) {
+                  if (!strcmp(pilhaSimbolos[j].tipo, PR[1]) || !strcmp(pilhaSimbolos[j].tipo, PR[2]) || !strcmp(pilhaSimbolos[j].tipo, PR[4])) {
                     j++;
                   }
                   else erro(18);
@@ -224,15 +252,17 @@ float Fator() {
           }
         }
         if(!strcmp(T.sinal, "fecha_par")) {
+          printf("TOTAL PARAM: %d | CONT PARAM: %d\n", totalParam, contParam);
           paramChamadaFuncao(totalParam, contParam); //verifica paramentros
 
-          if (!strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[1])) //verifica se o número é do tipo inteiro ou char
+          //verifica se o número é do tipo inteiro ou caracter ou booleano
+          if (!strcmp(pilhaSimbolos[i].tipo, PR[1]) || !strcmp(pilhaSimbolos[i].tipo, PR[2]) || !strcmp(pilhaSimbolos[i].tipo, PR[4]))
             resultado = 0;
           else if (!strcmp(pilhaSimbolos[i].tipo, PR[3])) //verifica se o número é do tipo real
             resultado = 1;
           else
             erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
-          printf("CALL L%d\n", pilhaSimbolos[i].endereco);
+          fprintf(MP, "CALL L%d\n", pilhaSimbolos[i].endereco);
           T = analex(FD);
         }
         else {
@@ -250,17 +280,17 @@ float Fator() {
         }*/
         else
           erro(16); // O operando é inválido, pois não possui o tipo compatível com a expressão
-        printf("LOAD %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
+        fprintf(MP, "LOAD %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
       }
     }
     else { // Obtenção de valores para cálculos de expressões aritméticas
       if (!strcmp(T.categoria, categorias[3]) || !strcmp(T.categoria, categorias[6])) { //verifica se o número é do tipo inteiro ou char
         resultado = 0;
-        printf("PUSH %.0f\n", T.valor);
+        fprintf(MP, "PUSH %.0f\n", T.valor);
       }
       else if (!strcmp(T.categoria, categorias[4])) { //verifica se o número é real (float)
         resultado = 1;
-        printf("PUSH %f\n", T.valor);
+        fprintf(MP, "PUSH %f\n", T.valor);
       }
       /*else if (!strcmp(T.categoria, categorias[6])) { //verifica se o número é caracter (char)
         resultado = 2;
@@ -283,8 +313,13 @@ float Fator() {
 
   else if (!strcmp(T.sinal, "nao_logico")){
     T = analex(FD);
-    printf("NOT\n");
     Fator();
+    fprintf(MP, "GOFALSE L%d\n", ++label);
+    fprintf(MP, "PUSH 0\n");
+    fprintf(MP, "GOTO L%d\n", ++label);
+    fprintf(MP, "LABEL L%d\n", label-1);
+    fprintf(MP, "PUSH 1\n");
+    fprintf(MP, "LABEL L%d\n", label);
   }
 
   else if (!strcmp(T.categoria, "digito")){
@@ -337,10 +372,7 @@ void prog() {
         strcpy(pilhaSimbolos[topoSimbolos].tipo, tipoAux);
         strcpy(pilhaSimbolos[topoSimbolos].categoria, "variavel");
         pilhaSimbolos[topoSimbolos].escopo = global;
-        if (!ehprototipo)
-          pilhaSimbolos[topoSimbolos].ehZumbi = 0;
-        else
-          pilhaSimbolos[topoSimbolos].ehZumbi = 1;
+        pilhaSimbolos[topoSimbolos].ehZumbi = 0;
         topoSimbolos++;
         T = analex(FD);
       }
@@ -383,17 +415,13 @@ void prog() {
       int x = --topoSimbolos;
       if (!ehprototipo) {
         strcpy(pilhaSimbolos[x].categoria, "funcao"); // Informa à pilha que o símbolo armazenado anteriormente trata-se de uma função
-        printf("GOTO --------------------- L%d\n", ++label);
-        printf("LABEL -------------------- L%d\n", ++label);
-        printf("INIPR 1\n");
-        pilhaSimbolos[x].endereco = label;
-        if (!strcmp(pilhaSimbolos[x].nome, "principal")) // Se a função for principal, salva seu label numa variável para uso posterior
-          labelPrincipal = label;
         ehfuncao = 1;
         temRetorno = 0;
       }
-      else
+      else {
         strcpy(pilhaSimbolos[x].categoria, "prototipo");
+        pilhaSimbolos[x].endereco = ++label;
+      }
       topoSimbolos++;
       strcpy(tipoFunc, pilhaSimbolos[x].tipo); //Armazena o tipo da função
 
@@ -472,7 +500,7 @@ void prog() {
   if (!ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
     T = analex(FD);
     if (!ehprototipo)
-      printf("AMEM %d\n", qtdVariaveisGlobais);
+      fprintf(MP, "AMEM %d\n", qtdVariaveisGlobais);
   }
 
   else if (!ehfuncao && !(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
@@ -486,7 +514,7 @@ void prog() {
   }
 
   else if (ehfuncao && !strcmp(T.categoria, "SN") && !strcmp(T.sinal, "abre_chaves")) { // Abre a construção do corpo da função
-    int i=topoSimbolos-1, j=0, naoEhFuncao=1, posFunc=topoSimbolos;
+    int i=topoSimbolos-1, j=0, naoEhFuncao=1, achouPrototipo=0, posFunc=topoSimbolos;
 
     /*Confere se os tipos dos parâmetros da declaração da função são compatíveis com os parâmetros de seu
     protótipo, caso este existir*/
@@ -497,6 +525,8 @@ void prog() {
         while (j < i) { //procura o protótipo desta função
           if (!strcmp(pilhaSimbolos[j].nome, pilhaSimbolos[i].nome))
             if (!strcmp(pilhaSimbolos[j].categoria, "prototipo")) {
+              achouPrototipo = 1;
+              pilhaSimbolos[posFunc].endereco = pilhaSimbolos[j].endereco; // Armazena o endereço do prototipo à função
               if (!(!strcmp(pilhaSimbolos[j].tipo, pilhaSimbolos[i].tipo)))
                 erro(21); //Tipo do retorno na declaração da função é diferente do tipo de retorno de seu protótipo
               j++;
@@ -521,8 +551,22 @@ void prog() {
       }
     } // Se o protótipo não for encontrado, o fluxo continua normalmente.
 
-    /*if (qtdParams) //Se a quantidade de parâmetros for diferente de 0, aloca-se a memória para eles
-      printf("AMEM %d\n", qtdParams);*/
+    fprintf(MP, "GOTO L%d\n", ++label);
+    labelAnterior = label;
+    //Não tendo encontrado o protótipo da função, armazena-se seu endereço com um novo rótulo
+    if (!achouPrototipo) {
+      fprintf(MP, "LABEL L%d\n", ++label);
+      fprintf(MP, "INIPR 1\n");
+      pilhaSimbolos[posFunc].endereco = label;
+      if (!strcmp(pilhaSimbolos[posFunc].nome, "principal")) // Se a função for principal, salva seu label numa variável para uso posterior
+        labelPrincipal = label;
+    }
+    else {
+      fprintf(MP, "LABEL L%d\n", pilhaSimbolos[posFunc].endereco);
+      fprintf(MP, "INIPR 1\n");
+      if (!strcmp(pilhaSimbolos[posFunc].nome, "principal")) // Se a função for principal, salva seu label numa variável para uso posterior
+        labelPrincipal = pilhaSimbolos[posFunc].endereco;
+    }
 
     //Adiciona o endereço dos parâmetros da última função declarada
     while (++posFunc < topoSimbolos)
@@ -565,8 +609,8 @@ void prog() {
 
         if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula")) {
           T = analex(FD);
-          printf("AMEM %d\n", qtdVariaveisLocais);
-          //qtdVariaveisLocais = 0;
+          fprintf(MP, "AMEM %d\n", qtdVariaveisLocais);
+          qtdVariaveisLocais = 0;
         }
         else if (!(!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "ponto_virgula"))) {
           erro(8);
@@ -585,7 +629,7 @@ void prog() {
     }
   }
 
-  if(ehfuncao)
+  if(ehfuncao && !temRetorno)
     retornoDaFuncao(tipoFunc, 0.0);
 
   if (!strcmp(T.categoria, "SN") && !strcmp(T.sinal, "fecha_chaves")) {
@@ -596,12 +640,11 @@ void prog() {
       i--;
     }
 
-    if (!strcmp(pilhaSimbolos[i].tipo, "semretorno")) {
-      if (qtdVariaveisLocais)
-        printf("DMEM %d\n", qtdVariaveisLocais);
-      printf("RET 1,%d\n", qtdParams);
-      printf("LABEL L%d\n", pilhaSimbolos[i].endereco-1);
-    }
+    if (qtdVariaveisLocais)
+      fprintf(MP, "DMEM %d\n", qtdVariaveisLocais);
+    fprintf(MP, "RET 1,%d\n", qtdParams);
+    //fprintf(MP, "LABEL L%d\n", pilhaSimbolos[i].endereco-1);
+    fprintf(MP, "LABEL L%d\n", labelAnterior);
 
     T = analex(FD);
     posRelLocal = 0;
@@ -667,7 +710,7 @@ void cmd() {
           Expressao();
         }
 
-        printf("CALL L%d\n", pilhaSimbolos[i].endereco);
+        fprintf(MP, "CALL L%d\n", pilhaSimbolos[i].endereco);
 
         if (!strcmp(T.sinal, "fecha_par")) {
           T = analex(FD);
@@ -688,7 +731,7 @@ void cmd() {
           T = analex(FD);
         else
           erro(8);
-      printf("STOR %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
+      fprintf(MP, "STOR %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
       }
       else if (strcmp(T.sinal, "ponto_virgula")) { // Se o sinal não for ponto e vírgula, apresenta erro
         erro(8); //Falta sinal de ponto e vírgula
@@ -712,11 +755,10 @@ void cmd() {
           temRetorno = 1; // Entra no caso "retorne expressao;", portanto existe valor de retorno.
           retornoFuncao = Expressao();
           retornoDaFuncao(tipoFunc, retornoFuncao);
-          printf("STOR 1,%d\n", -3-qtdParams);
+          fprintf(MP, "STOR 1,%d\n", -3-qtdParams);
           if (qtdVariaveisLocais)
-            printf("DMEM %d\n", qtdVariaveisLocais+1); // Desaloca o espaço das variáveis locais e o do valor de retorno
-          printf("RET 1,%d\n", qtdParams);
-          printf("LABEL L%d\n", pilhaSimbolos[i].endereco-1);
+            fprintf(MP, "DMEM %d\n", qtdVariaveisLocais); // Desaloca o espaço das variáveis locais
+          fprintf(MP, "RET 1,%d\n", qtdParams);
         }
         else
           temRetorno = 0; // No caso de um "retorne;", uma função do tipo "semretorno" pode executar a instrução sem problemas
@@ -731,26 +773,30 @@ void cmd() {
         T = analex(FD);
         if (!strcmp(T.sinal, "abre_par")) {
           T = analex(FD);
-
+          int posicoes[4];
           atrib();
           if(!strcmp(T.sinal, "ponto_virgula")) {
-            printf("LABEL L%d\n", ++label);
+            fprintf(MP, "LABEL L%d\n", ++label);
+            posicoes[0] = label;
             T = analex(FD);
             Expressao();
             if(!strcmp(T.sinal, "ponto_virgula")) {
-              printf("GOFALSE L%d\n", ++label);
-              printf("GOTO L%d\n", ++label);
-              printf("LABEL L%d\n", ++label);
+              fprintf(MP, "GOFALSE L%d\n", ++label);
+              posicoes[1] = label;
+              fprintf(MP, "GOTO L%d\n", ++label);
+              posicoes[2] = label;
+              fprintf(MP, "LABEL L%d\n", ++label);
+              posicoes[3] = label;
               T = analex(FD);
               //Verificar com Atta se é atrib ou expressão
               atrib();
               if (!strcmp(T.sinal, "fecha_par")) {
-                printf("GOTO L%d\n", label-3);
-                printf("LABEL L%d\n", label-1);
+                fprintf(MP, "GOTO L%d\n", posicoes[0]);
+                fprintf(MP, "LABEL L%d\n", posicoes[2]);
                 T = analex(FD);
                 cmd();
-                printf("GOTO L%d\n", label);
-                printf("LABEL L%d\n", label-2);
+                fprintf(MP, "GOTO L%d\n", posicoes[3]);
+                fprintf(MP, "LABEL L%d\n", posicoes[1]);
               }
               else {
                 erro(3);
@@ -766,17 +812,20 @@ void cmd() {
         }
       }
       else if (!strcmp(T.lexema, "enquanto")) {
+        int posicoes[2];
         T = analex(FD);
         if (!strcmp(T.sinal, "abre_par")) {
-          printf("LABEL L%d\n", ++label);
+          fprintf(MP, "LABEL L%d\n", ++label);
+          posicoes[0] = label;
           T = analex(FD);
           Expressao();
-          printf("GOFALSE L%d\n", ++label);
+          fprintf(MP, "GOFALSE L%d\n", ++label);
+          posicoes[1] = label;
           if (!strcmp(T.sinal, "fecha_par")) {
             T = analex(FD);
             cmd();
-            printf("GOTO L%d\n", label-1);
-            printf("LABEL L%d\n", label);
+            fprintf(MP, "GOTO L%d\n", posicoes[0]);
+            fprintf(MP, "LABEL L%d\n", posicoes[1]);
           }
           else {
             erro(3);
@@ -784,21 +833,26 @@ void cmd() {
         }
       }
       else if (!strcmp(T.lexema, "se")) {
+        int posicoes[2];
         T = analex(FD);
         if (!strcmp(T.sinal, "abre_par")) {
           T = analex(FD);
           Expressao();
           if (!strcmp(T.sinal, "fecha_par")) {
-            printf("GOFALSE %d\n", ++label);
+            fprintf(MP, "GOFALSE L%d\n", ++label);
+            posicoes[0] = label;
             T = analex(FD);
             cmd();
             if (!strcmp(T.lexema, "senao")) {
-              printf("GOTO %d\n", ++label);
-              printf("LABEL %d\n", label-1);
+              fprintf(MP, "GOTO L%d\n", ++label);
+              posicoes[1] = label;
+              fprintf(MP, "LABEL L%d\n", posicoes[0]);
               T = analex(FD);
               cmd();
+              fprintf(MP, "LABEL L%d\n", posicoes[1]);
             }
-            printf("LABEL %d\n", label);
+            else
+              fprintf(MP, "LABEL L%d\n", posicoes[0]);
           }
           else {
             erro(3);
@@ -825,7 +879,7 @@ void atrib(){
       if (!strcmp(T.sinal, "igual")){
         T = analex(FD);
         pilhaSimbolos[i].valor = Expressao();
-        printf("STOR %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
+        fprintf(MP, "STOR %d,%d\n", pilhaSimbolos[i].escopo, pilhaSimbolos[i].endereco);
       }
     }
   }
@@ -837,71 +891,71 @@ void op_rel(char *sinal){
     !strcmp(sinal, "menor") || !strcmp(sinal, "maior") ||
     !strcmp(T.sinal, "nao_igual") || !strcmp(sinal, "igual_igual" )) {
       if (!strcmp(sinal, "igual_igual" )) {
-        printf("SUB\n");
-        printf("GOFALSE L%d\n", ++label);
-        printf("PUSH 0\n");
-        printf("GOTO L%d\n", ++label);
-        printf("LABEL L%d\n", label-1);
-        printf("PUSH 1\n");
-        printf("LABEL L%d\n", label);
+        fprintf(MP, "SUB\n");
+        fprintf(MP, "GOFALSE L%d\n", ++label);
+        fprintf(MP, "PUSH 0\n");
+        fprintf(MP, "GOTO L%d\n", ++label);
+        fprintf(MP, "LABEL L%d\n", label-1);
+        fprintf(MP, "PUSH 1\n");
+        fprintf(MP, "LABEL L%d\n", label);
       }
 
       else if (!strcmp(sinal, "nao_igual" )) {
-        printf("SUB\n");
-        printf("GOFALSE L%d\n", ++label);
-        printf("PUSH 1\n");
-        printf("GOTO L%d\n", ++label);
-        printf("LABEL L%d\n", label-1);
-        printf("PUSH 0\n");
-        printf("LABEL L%d\n", label);
+        fprintf(MP, "SUB\n");
+        fprintf(MP, "GOFALSE L%d\n", ++label);
+        fprintf(MP, "PUSH 1\n");
+        fprintf(MP, "GOTO L%d\n", ++label);
+        fprintf(MP, "LABEL L%d\n", label-1);
+        fprintf(MP, "PUSH 0\n");
+        fprintf(MP, "LABEL L%d\n", label);
       }
 
       else if (!strcmp(sinal, "maior")) {
-        printf("SUB\n");
-        printf("GOTRUE L%d\n", ++label);
-        printf("PUSH 0\n");
-        printf("GOTO L%d\n", ++label);
-        printf("LABEL L%d\n", label-1);
-        printf("PUSH 1\n");
-        printf("LABEL L%d\n", label);
+        fprintf(MP, "SUB\n");
+        fprintf(MP, "GOTRUE L%d\n", ++label);
+        fprintf(MP, "PUSH 0\n");
+        fprintf(MP, "GOTO L%d\n", ++label);
+        fprintf(MP, "LABEL L%d\n", label-1);
+        fprintf(MP, "PUSH 1\n");
+        fprintf(MP, "LABEL L%d\n", label);
       }
 
       else if (!strcmp(sinal, "maior_igual")) {
-        printf("SUB\n");
-        printf("COPY\n");
-        printf("GOFALSE L%d\n", ++label);
-        printf("GOTRUE L%d\n", ++label);
-        printf("PUSH 0\n");
-        printf("GOTO L%d\n", ++label);
-        printf("LABEL L%d\n", label-2);
-        printf("POP\n");
-        printf("LABEL L%d\n", label-1);
-        printf("PUSH 1\n");
-        printf("LABEL L%d\n", label);
+        fprintf(MP, "SUB\n");
+        fprintf(MP, "COPY\n");
+        fprintf(MP, "GOFALSE L%d\n", ++label);
+        fprintf(MP, "GOTRUE L%d\n", ++label);
+        fprintf(MP, "PUSH 0\n");
+        fprintf(MP, "GOTO L%d\n", ++label);
+        fprintf(MP, "LABEL L%d\n", label-2);
+        fprintf(MP, "POP\n");
+        fprintf(MP, "LABEL L%d\n", label-1);
+        fprintf(MP, "PUSH 1\n");
+        fprintf(MP, "LABEL L%d\n", label);
       }
 
       else if (!strcmp(sinal, "menor")) {
-        printf("SUB\n");
-        printf("COPY\n");
-        printf("GOFALSE L%d\n", ++label);
-        printf("GOTRUE L%d\n", ++label);
-        printf("PUSH 1\n");
-        printf("GOTO L%d\n", ++label);
-        printf("LABEL L%d\n", label-2);
-        printf("POP\n");
-        printf("LABEL L%d\n", label-1);
-        printf("PUSH 0\n");
-        printf("LABEL L%d\n", label);
+        fprintf(MP, "SUB\n");
+        fprintf(MP, "COPY\n");
+        fprintf(MP, "GOFALSE L%d\n", ++label);
+        fprintf(MP, "GOTRUE L%d\n", ++label);
+        fprintf(MP, "PUSH 1\n");
+        fprintf(MP, "GOTO L%d\n", ++label);
+        fprintf(MP, "LABEL L%d\n", label-2);
+        fprintf(MP, "POP\n");
+        fprintf(MP, "LABEL L%d\n", label-1);
+        fprintf(MP, "PUSH 0\n");
+        fprintf(MP, "LABEL L%d\n", label);
       }
 
       else if (!strcmp(sinal, "menor_igual")) {
-        printf("SUB\n");
-        printf("GOTRUE L%d\n", ++label);
-        printf("PUSH 1\n");
-        printf("GOTO L%d\n", ++label);
-        printf("LABEL L%d\n", label-1);
-        printf("PUSH 0\n");
-        printf("LABEL L%d\n", label);
+        fprintf(MP, "SUB\n");
+        fprintf(MP, "GOTRUE L%d\n", ++label);
+        fprintf(MP, "PUSH 1\n");
+        fprintf(MP, "GOTO L%d\n", ++label);
+        fprintf(MP, "LABEL L%d\n", label-1);
+        fprintf(MP, "PUSH 0\n");
+        fprintf(MP, "LABEL L%d\n", label);
       }
     }
 }

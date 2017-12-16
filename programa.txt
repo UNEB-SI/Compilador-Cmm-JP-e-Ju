@@ -1,0 +1,14 @@
+prototipo semretorno func (semparam);
+
+inteiro funcao (semparam){
+
+func();
+}
+
+semretorno func (semparam){
+
+}
+
+inteiro principal(semparam){
+
+}

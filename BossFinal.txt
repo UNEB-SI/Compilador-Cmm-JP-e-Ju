@@ -1,0 +1,53 @@
+/******************************************* Este código está CORRETO *******************************************/
+/*02*/
+/*03*/	prototipo semretorno funcao (inteiro,real x,caracter,booleano y);
+/*04*/ 	inteiro i,j,k;
+/*05*/ 	prototipo real valor (booleano s);
+/*06*/
+/*07*/	booleano func (booleano bool,real z){
+/*08*/	
+/*09*/	inteiro i,j;
+/*10*/	k = i * j;
+/*11*/	
+/*12*/	inteiro cont;
+/*13*/		para(cont = 0; cont <= 10; cont = cont + 1){
+/*14*/			se(cont == 5)
+/*15*/				retorne 1;
+/*16*/		}
+/*17*/	}
+/*18*/
+/*19*/	semretorno funcao (inteiro m, real x, caracter n, booleano y){
+/*20*/
+/*21*/	caracter l;
+/*20*/	y = l + i;
+/*21*/
+/*22*/		se (n < j)
+/*23*/			n = "a";
+/*24*/		senao
+/*25*/			n = "a";
+/*26*/	}
+/*27*/
+/*28*/ real dolar,euro;
+/*29*/				
+/*30*/ real valor (booleano s){
+/*31*/
+/*32*/		se (s == 1){
+/*33*/			retorne (dolar * 3.3);
+/*34*/		}senao{
+/*35*/			retorne (euro * 3.9);
+/*36*/		}
+/*37*/	}
+/*38*/
+/*39*/ semretorno principal (semparam){
+/*40*/
+/*41*/	inteiro g,s;
+/*42*/	s = 2;
+/*43*/	real o;
+/*44*/	 o = valor(s);
+/*45*/
+/*46*/		enquanto ((g == 0) && (s != 2))
+/*47*/			s = s+1;
+/*48*/		retorne;
+/*49*/	}
+/*50*/
+/*51*/ real teste;
